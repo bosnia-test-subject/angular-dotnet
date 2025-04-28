@@ -14,11 +14,11 @@ export class MembersService {
 
   getMembers() 
   {
-    return this.http.get<Member[]>(this.baseUrl + 'users');
+    return this.http.get<Member[]>(this.baseUrl + 'users', this.getHttpOptions());
   }
   getMember(username: string) 
   {
-    return this.http.get<Member>(this.baseUrl + 'users/' + username);
+    return this.http.get<Member>(this.baseUrl + 'users/' + username, this.getHttpOptions());
   }
 
   getHttpOptions() 
