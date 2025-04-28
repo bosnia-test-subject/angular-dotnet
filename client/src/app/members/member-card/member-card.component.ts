@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
+import { Member } from '../../_models/member';
+import { AccountService } from '../../_services/account.service';
 
 @Component({
   selector: 'app-member-card',
@@ -8,5 +10,6 @@ import { Component } from '@angular/core';
   styleUrl: './member-card.component.css'
 })
 export class MemberCardComponent {
-
+  accountService = inject(AccountService);
+  member = input.required<Member>();
 }
