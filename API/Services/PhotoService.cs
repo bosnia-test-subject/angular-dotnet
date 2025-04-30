@@ -14,7 +14,7 @@ public class PhotoService : IPhotoService
     {
         var acc = new Account(config.Value.CloudName, config.Value.ApiKey, config.Value.ApiSecret);
         
-        _cloudinary = new Cloudinary();
+        _cloudinary = new Cloudinary(acc);
     }
     public async Task<ImageUploadResult> AddPhotoAsync(IFormFile file)
     {
