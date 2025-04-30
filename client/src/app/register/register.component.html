@@ -1,36 +1,25 @@
 <form [formGroup]="registerForm" (ngSubmit)="register()" autocomplete="off">
     <h2 class="text-center text-primary">Sign up</h2>
     <hr>
-    <div class="mb-3 form-floating">
-        <input type="text"
-        class="form-control"
-        name="username"
-        formControlName="username"
-        placeholder="Username"
-        >
-        <label>Username</label>
-    </div>
 
-    <div class="mb-3 form-floating">
-        <input type="password"
-        class="form-control"
-        name="password"
-        formControlName="password"
-        placeholder="Password"
-        >
-        <label>Password</label>
-    </div>
-    <div class="mb-3 form-floating">
-        <input type="password"
-        class="form-control"
-        name="password"
-        formControlName="confirmPassword"
-        placeholder="Confirm Password"
-        >
-        <label>Confirm Password</label>
-    </div>
-    <div class="form-group text-center">
-        <button class="btn btn-success me-2">Register</button>
-        <button class="btn btn-default me-2" (click)="cancel()">Cancel</button>
-    </div>
+    <app-text-input
+    [formControl]="$any(registerForm.controls['username'])"
+    [label]="'Username'"
+    ></app-text-input>
+
+    <app-text-input
+    [formControl]="$any(registerForm.controls['password'])"
+    [label]="'Password'"
+    [type]="'password'"
+    ></app-text-input>
+
+    <app-text-input
+    [formControl]="$any(registerForm.controls['confirmPassword'])"
+    [label]="'Confirm password'"
+    [type]="'password'"
+    ></app-text-input>
+    
 </form>
+
+<p>Form value: {{registerForm.value | json}}</p>
+<p>Form value: {{registerForm.status | json}}</p>
