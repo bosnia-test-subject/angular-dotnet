@@ -1,33 +1,41 @@
 import { Component, inject, OnInit, output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
 import { JsonPipe, NgIf } from '@angular/common';
 import { TextInputComponent } from "../_forms/text-input/text-input.component";
+import { DatePickerComponent } from "../_forms/date-picker/date-picker.component";
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, JsonPipe, NgIf, TextInputComponent],
+  imports: [ReactiveFormsModule, JsonPipe, NgIf, TextInputComponent, DatePickerComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
 export class RegisterComponent implements OnInit {
   private acountService = inject(AccountService);
+  private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
   cancelRegister = output<boolean>();
   model: any = {}
 
   registerForm: FormGroup = new FormGroup({});
+  maxDate = new Date();
 
   initializeForm() 
   {
-    this.registerForm = new FormGroup(
+    this.registerForm = this.fb.group(
       {
-        username: new FormControl('', Validators.required),
-        password: new FormControl('', [Validators.required, Validators.minLength(4), 
-          Validators.maxLength(8)]),
-        confirmPassword: new FormControl('', [Validators.required, this.matchValues('password')]),
+        gender: ['male'],
+        username: ['', Validators.required],
+        knownAs: ['', Validators.required],
+        dateOfBirth: ['', Validators.required],
+        city: ['', Validators.required],
+        country: ['', Validators.required],
+        password: ['', [Validators.required, Validators.minLength(4), 
+          Validators.maxLength(8)]],
+        confirmPassword: ['', [Validators.required, this.matchValues('password')]],
       });
       this.registerForm.controls['password'].valueChanges.subscribe(
         {
@@ -46,6 +54,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.maxDate.setFullYear(this.maxDate.getFullYear() - 18)
   }
 
   register() {
