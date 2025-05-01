@@ -17,6 +17,8 @@ IMapper mapper,  IPhotoService photoService) : BaseApiController
     {
         var users = await userRepository.GetMembersAsync();
 
+        
+
         return Ok(users);
     }
     // moramo staviti curly brackets 
