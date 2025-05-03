@@ -20,10 +20,16 @@ public static class ApplicationServiceExtensions
 
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
+        // repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ILikesRepository, LikesRepository>();
+        // photos
         services.AddScoped<IPhotoService, PhotoService>();
+        // user activity logging
         services.AddScoped<LogUserActivity>();
+        // automapper general setup for app
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        // cloudinary connecting via settings class
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
         return services;
     }
