@@ -6,7 +6,7 @@
         } @else 
         {
             <ul class="chat">
-                @for (message of messages; track message.id) 
+                @for (message of messages(); track message.id) 
                 {
                     <li>
                         <div>
