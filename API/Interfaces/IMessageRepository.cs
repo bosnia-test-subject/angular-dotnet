@@ -10,7 +10,7 @@ public interface IMessageRepository
     void AddMessage(Message message);
     void DeleteMessage(Message message);
     Task<Message?> GetMessage(int id);
-    Task<PagedList<MessageDto>> GetMesagesForUser();
+    Task<PagedList<MessageDto>> GetMesagesForUser(MessageParams messageParams);
     Task<IEnumerable<MessageDto>> GetMessageThread(string currentUsername, string recipient);
     Task<bool> SaveAllAsync();
 }
