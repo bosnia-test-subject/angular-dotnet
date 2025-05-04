@@ -68,10 +68,8 @@
                 </tab>
                 <tab heading="Messages" (selectTab)="onTabActivated($event)">
                     <h4>Messages:</h4>
-                    <app-member-messages 
-                    [messages]="messages" 
-                    [username]="member.userName"
-                    (updateMessages)="onUpdateMessages($event)"></app-member-messages>
+                    <app-member-messages  
+                    [username]="member.userName"></app-member-messages>
                 </tab>
             </tabset>
         </div>
