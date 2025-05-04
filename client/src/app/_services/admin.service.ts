@@ -14,4 +14,9 @@ export class AdminService {
   {
     return this.http.get<User[]>(this.baseUrl + 'admin/users-with-roles');
   }
+
+  updateUserRoles(username: string) 
+  {
+    
+  }
 }
