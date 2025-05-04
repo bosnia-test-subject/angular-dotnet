@@ -17,17 +17,26 @@ import { MessageService } from '../../_services/message.service';
   styleUrl: './member-detail.component.css'
 })
 export class MemberDetailComponent implements OnInit {
-  @ViewChild('memberTabs') memberTabs?: TabsetComponent;
+  @ViewChild('memberTabs', {static: true}) memberTabs?: TabsetComponent;
   private memberService = inject(MembersService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
-  member?: Member;
+  member: Member = {} as Member;
   images: GalleryItem[] = [];
   activeTab?: TabDirective;
   messages: Message[] = [];
 
   ngOnInit(): void {
-    this.loadMember();
+    this.route.data.subscribe(
+      {
+        next: data => 
+          {
+            this.member = data['member'];
+            this.member && this.member.photos.map(p => {
+              this.images.push(new ImageItem({src: p.url, thumb: p.url}))
+            })
+          }
+      })
 
     this.route.queryParams.subscribe({
       next: params => 
@@ -35,6 +44,11 @@ export class MemberDetailComponent implements OnInit {
           params['tab'] && this.selectTab(params['tab']);
         }
     })
+  }
+
+  onUpdateMessages(event: Message) 
+  {
+    this.messages.push(event);
   }
 
   onTabActivated(data: TabDirective) 
@@ -58,18 +72,18 @@ export class MemberDetailComponent implements OnInit {
       }
   }
 
-  loadMember() 
-  {
-    const username = this.route.snapshot.paramMap.get('username');
-    if(!username) return;
-    this.memberService.getMember(username).subscribe(
-      {
-        next: member => {
-          this.member = member,
-          member.photos.map(p => {
-            this.images.push(new ImageItem({src: p.url, thumb: p.url}))
-          })
-        },
-      })
-  }
+  // loadMember() 
+  // {
+  //   const username = this.route.snapshot.paramMap.get('username');
+  //   if(!username) return;
+  //   this.memberService.getMember(username).subscribe(
+  //     {
+  //       next: member => {
+  //         this.member = member,
+  //         member.photos.map(p => {
+  //           this.images.push(new ImageItem({src: p.url, thumb: p.url}))
+  //         })
+  //       },
+  //     })
+  // }
 }
