@@ -26,8 +26,6 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         var user = mapper.Map<AppUser>(registerDto);
 
         user.UserName = registerDto.Username.ToLower();
-        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
-        user.PasswordSalt = hmac.Key;
 
       //  var user = new AppUser
       //  {
@@ -57,15 +55,15 @@ public class AccountController(DataContext context, ITokenService tokenService, 
 
         if(user == null) return Unauthorized("Invalid username");
 
-        using var hmac = new HMACSHA512(user.PasswordSalt);
+//         using var hmac = new HMACSHA512(user.PasswordSalt);
 
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
+//         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
 
-// foreach petlja disclaimer
-        for (int i = 0; i < computedHash.Length; i++)
-        {
-            if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid password");
-        }
+// // foreach petlja disclaimer
+//         for (int i = 0; i < computedHash.Length; i++)
+//         {
+//             if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Invalid password");
+//         }
 
         return new UserDto
         {
