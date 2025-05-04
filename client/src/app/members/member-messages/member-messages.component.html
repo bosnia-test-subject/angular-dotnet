@@ -24,7 +24,7 @@
                                         }
                                         @if (message.dateRead && message.senderUsername !== username()) 
                                         {
-                                            <span class="text-success">(read {{message.dateRead}})</span>
+                                            <span class="text-success">(read {{message.dateRead | timeago}})</span>
                                         }
                                     </small>
                                 </div>
