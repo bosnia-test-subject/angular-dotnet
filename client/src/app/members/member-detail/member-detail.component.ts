@@ -28,6 +28,13 @@ export class MemberDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMember();
+
+    this.route.queryParams.subscribe({
+      next: params => 
+        {
+          params['tab'] && this.selectTab(params['tab']);
+        }
+    })
   }
 
   onTabActivated(data: TabDirective) 
@@ -39,6 +46,15 @@ export class MemberDetailComponent implements OnInit {
           {
             next: messages => this.messages = messages,
           });
+      }
+  }
+
+  selectTab(heading: string) 
+  {
+    if(this.memberTabs) 
+      {
+        const messageTab = this.memberTabs.tabs.find(x => x.heading === heading);
+        if (messageTab) messageTab.active = true;
       }
   }
 
