@@ -32,6 +32,9 @@ public static class ApplicationServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         // cloudinary connecting via settings class
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+        //signalR
+        services.AddSignalR();
+
         return services;
     }
 }
