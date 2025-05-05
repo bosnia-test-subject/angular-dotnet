@@ -36,7 +36,7 @@
                         <div>
                             <img class="rounded-circle me-2" [src]="isOutbox ? 
                             (message.recipientPhotoUrl || './assets/user.png') : 
-                            (message.senderPhotoUrl || './assets/user.png') "  
+                            (message.recipientPhotoUrl || './assets/user.png') "  
                             alt="image of user">
                             <strong>{{isOutbox ? message.recipientUsername 
                             : message.senderUsername}}</strong>
