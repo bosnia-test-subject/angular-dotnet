@@ -13,4 +13,7 @@ public class Photo
     // Navigation properties
     public int AppUserId { get; set; }
     public AppUser AppUser { get; set; } = null!;
+
+    // PHOTO MANAGEMENT TASK
+    public bool isApproved { get; set; }
 }
