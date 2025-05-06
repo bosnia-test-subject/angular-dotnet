@@ -66,7 +66,9 @@ IMapper mapper,  IPhotoService photoService) : BaseApiController
         var photo = new Photo 
         {
             Url = result.SecureUrl.AbsoluteUri,
-            PublicId = result.PublicId
+            PublicId = result.PublicId,
+            // PHOTO MANAGEMENT TASK
+            isApproved = false
         };
 
         if(user.Photos.Count == 0) photo.IsMain = true;

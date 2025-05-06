@@ -13,8 +13,12 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 {
     public async Task<MemberDto?> GetMemberAsync(string username)
     {
-        return await context.
-        Users.Where(x => x.UserName == username).ProjectTo<MemberDto>(mapper.ConfigurationProvider).SingleOrDefaultAsync();
+        // PHOTO MANAGEMENT TASK 7
+        var query = context.Users
+        .Where(x => x.UserName == username).ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsQueryable();
+
+        query = query.IgnoreQueryFilters();
+        return await query.FirstOrDefaultAsync();
     }
 
     public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)

@@ -55,7 +55,6 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
         var messages = query.ProjectTo<MessageDto>(mapper.ConfigurationProvider);
 
         return await PagedList<MessageDto>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
-        
     }
 
     public async Task<Message?> GetMessage(int id)

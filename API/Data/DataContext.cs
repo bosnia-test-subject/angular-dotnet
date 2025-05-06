@@ -56,5 +56,7 @@ IdentityUserToken<int>>(options)
             .HasOne(x => x.Sender)
             .WithMany(x => x.MessagesSent)
             .OnDelete(DeleteBehavior.Restrict);
+        // PHOTO MANAGEMENT TASK
+        builder.Entity<Photo>().HasQueryFilter(p => p.isApproved);
     }
 }

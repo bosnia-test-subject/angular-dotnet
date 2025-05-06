@@ -15,5 +15,5 @@ public class Photo
     public AppUser AppUser { get; set; } = null!;
 
     // PHOTO MANAGEMENT TASK
-    public bool isApproved { get; set; }
+    public bool isApproved { get; set; } = false;
 }
