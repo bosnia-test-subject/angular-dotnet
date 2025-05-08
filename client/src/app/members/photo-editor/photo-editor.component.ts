@@ -6,6 +6,7 @@ import { AccountService } from '../../_services/account.service';
 import { environment } from '../../../environments/environment';
 import { Photo } from '../../_models/photo';
 import { MembersService } from '../../_services/members.service';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-photo-editor',
   standalone: true,
@@ -16,6 +17,7 @@ import { MembersService } from '../../_services/members.service';
 export class PhotoEditorComponent implements OnInit {
   private accountService = inject(AccountService);
   private memberService = inject(MembersService);
+  private toastr = inject(ToastrService);
   member = input.required<Member>();
   uploader?: FileUploader;
   hasBaseDropZoneOver = false;
@@ -45,26 +47,33 @@ export class PhotoEditorComponent implements OnInit {
 
   setMainPhoto(photo: Photo) 
   {
-    this.memberService.setMainPhoto(photo).subscribe(
+    if(photo.isApproved) 
       {
-        next: _ => 
+        this.memberService.setMainPhoto(photo).subscribe(
           {
-            const user = this.accountService.currentUser();
-            if(user) 
+            next: _ => 
               {
-                user.photoUrl = photo.url,
-                this.accountService.setCurrentUser(user)
+                const user = this.accountService.currentUser();
+                if(user) 
+                  {
+                    user.photoUrl = photo.url,
+                    this.accountService.setCurrentUser(user)
+                  }
+                  const updatedMember = {...this.member()}
+                  updatedMember.photoUrl = photo.url;
+                  updatedMember.photos.forEach(p => 
+                    {
+                      if (p.isMain) { p.isMain = false; }
+                      if (p.id === photo.id) { p.isMain = true; }
+                    });
+                    this.memberChange.emit(updatedMember);
               }
-              const updatedMember = {...this.member()}
-              updatedMember.photoUrl = photo.url;
-              updatedMember.photos.forEach(p => 
-                {
-                  if (p.isMain) { p.isMain = false; }
-                  if (p.id === photo.id) { p.isMain = true; }
-                });
-                this.memberChange.emit(updatedMember);
-          }
-      })
+          })
+      }
+      else 
+      {
+        this.toastr.error("You cannot set unapproved photos as MAIN!");
+      }
   }
   initializeUploader() 
   {
