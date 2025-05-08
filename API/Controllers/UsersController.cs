@@ -4,7 +4,6 @@ using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
-using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +11,7 @@ namespace API.Controllers;
 
 [Authorize]
 public class UsersController(IUnitOfWork unitOfWork, 
-IMapper mapper,  IPhotoService photoService) : BaseApiController
+IMapper mapper, IPhotoService photoService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) 
@@ -38,7 +37,6 @@ IMapper mapper,  IPhotoService photoService) : BaseApiController
     [HttpPut]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto) 
     {
-
         var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
 
         if (user == null) return BadRequest("Could not find user!");
@@ -71,7 +69,7 @@ IMapper mapper,  IPhotoService photoService) : BaseApiController
             isApproved = false
         };
 
-        if(user.Photos.Count == 0) photo.IsMain = true;
+     //   if(user.Photos.Count == 0) photo.IsMain = true;
 
         user.Photos.Add(photo);
 
@@ -111,7 +109,8 @@ IMapper mapper,  IPhotoService photoService) : BaseApiController
 
         if (user == null) return BadRequest("User not found");
 
-        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
+        var photo = user.Photos
+        .FirstOrDefault(x => x.Id == photoId);
 
         if(photo == null || photo.IsMain) return BadRequest("This photo cannot be deleted!");
 

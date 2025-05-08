@@ -1,27 +1,30 @@
+using System.Threading.Tasks;
+using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
 // PHOTO MANAGEMENT TASK
-public class PhotoRepository(DataContext context) : IPhotoRepository
+public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoRepository
 {
     public async Task<Photo?> GetPhotoById(int id)
     {
-        return await context.Photos.FindAsync(id);
+        return await context.Photos
+        .IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<Photo>> GetUnapprovedPhotos(string username)
+    public async Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos(string username)
     {
-        return await context.Photos.Where(x => x.AppUser.UserName == username 
-        && x.isApproved == false).ToListAsync();
+        var query = context.Photos.IgnoreQueryFilters().Where(x => x.AppUser.UserName == username 
+        && x.isApproved == false).AsQueryable();
+        return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider).ToListAsync();
     }
-
-    public void RemovePhoto(int photoId)
+    public void RemovePhoto(Photo photo)
     {
-        var photo = context.Photos.Find(photoId);
-        if (photo == null) throw new Exception("Photo id cannot be null!");
         context.Photos.Remove(photo);
     }
 }
