@@ -479,7 +479,8 @@ $RECYCLE.BIN/
 
 # .gitignore
 appsettings.json
-
+localhost.pem
+localhost-key.pem
 
 # Windows shortcuts
 *.lnk
