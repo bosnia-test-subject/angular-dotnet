@@ -17,10 +17,9 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         .IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos(string username)
+    public async Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos()
     {
-        var query = context.Photos.IgnoreQueryFilters().Where(x => x.AppUser.UserName == username 
-        && x.isApproved == false).AsQueryable();
+        var query = context.Photos.IgnoreQueryFilters().Where(x => x.isApproved == false).AsQueryable();
         return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider).ToListAsync();
     }
     public void RemovePhoto(Photo photo)

@@ -109,8 +109,7 @@ IMapper mapper, IPhotoService photoService) : BaseApiController
 
         if (user == null) return BadRequest("User not found");
 
-        var photo = user.Photos
-        .FirstOrDefault(x => x.Id == photoId);
+        var photo = await unitOfWork.PhotosRepository.GetPhotoById(photoId);
 
         if(photo == null || photo.IsMain) return BadRequest("This photo cannot be deleted!");
 

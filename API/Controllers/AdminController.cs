@@ -13,14 +13,10 @@ public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitO
 
     // PHOTO MANAGEMENT TASK NUM. 10.
     [Authorize(Policy = "RequireAdminRole")]
-    [HttpGet("unapproved-photos/{username}")]
-    public async Task<ActionResult> GetPhotosForApproval(string username) 
+    [HttpGet("unapproved-photos")]
+    public async Task<ActionResult> GetPhotosForApproval() 
     {
-        var user = await userManager.FindByNameAsync(username);
-
-        if(user == null) return BadRequest("User not found");
-
-        var photos = await unitOfWork.PhotosRepository.GetUnapprovedPhotos(user.UserName!);
+        var photos = await unitOfWork.PhotosRepository.GetUnapprovedPhotos();
         return Ok(photos);
     }
     // PHOTO MANAGEMENT TASK NUM. 12.
