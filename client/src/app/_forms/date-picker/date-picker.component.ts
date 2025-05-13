@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NgIf } from '@angular/common';
 import { Component, input, Self } from '@angular/core';
 import {

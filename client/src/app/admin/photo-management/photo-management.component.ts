@@ -21,7 +21,7 @@ export class PhotoManagementComponent implements OnInit {
   // task 19
   approvePhoto(id: number) {
     return this.adminService.approvePhoto(id).subscribe({
-      next: response => {
+      next: () => {
         this.toastr.success('Photo succesfully approved');
         this.getApprovalPhotos();
         console.log('Photo approved');
@@ -32,7 +32,7 @@ export class PhotoManagementComponent implements OnInit {
   // task 19
   rejectPhoto(id: number) {
     return this.adminService.rejectPhoto(id).subscribe({
-      next: response => {
+      next: () => {
         this.toastr.success('Photo succesfully rejected');
         this.getApprovalPhotos();
       },

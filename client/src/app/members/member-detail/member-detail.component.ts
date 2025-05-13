@@ -49,7 +49,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
     });
 
     this.route.paramMap.subscribe({
-      next: _ => this.onRouteParamsChange(),
+      next: () => this.onRouteParamsChange(),
     });
 
     this.route.queryParams.subscribe({

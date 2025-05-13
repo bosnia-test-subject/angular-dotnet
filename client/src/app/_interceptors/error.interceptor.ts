@@ -31,6 +31,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             router.navigateByUrl('/not-found');
             break;
           case 500:
+            // eslint-disable-next-line no-case-declarations
             const navigationExtras: NavigationExtras = {
               state: { error: error.error },
             };

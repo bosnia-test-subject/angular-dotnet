@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   // evade hardcoding
   adress: string = 'https://localhost:5001/api/users';
   title = 'Dating App';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   users: any;
 
   setCurrentUser() {

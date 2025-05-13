@@ -70,7 +70,7 @@ export class RegisterComponent implements OnInit {
     this.registerForm.patchValue({ dateOfBirth: dob });
 
     this.acountService.register(this.registerForm.value).subscribe({
-      next: _ => {
+      next: () => {
         this.router.navigateByUrl('/members');
       },
       error: error => {

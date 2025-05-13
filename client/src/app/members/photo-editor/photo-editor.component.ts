@@ -33,7 +33,7 @@ export class PhotoEditorComponent implements OnInit {
 
   deletePhoto(photo: Photo) {
     this.memberService.deletePhoto(photo).subscribe({
-      next: _ => {
+      next: () => {
         const updatedMember = { ...this.member() };
         updatedMember.photos = updatedMember.photos.filter(
           x => x.id !== photo.id
@@ -46,7 +46,7 @@ export class PhotoEditorComponent implements OnInit {
   setMainPhoto(photo: Photo) {
     if (photo.isApproved) {
       this.memberService.setMainPhoto(photo).subscribe({
-        next: _ => {
+        next: () => {
           const user = this.accountService.currentUser();
           if (user) {
             (user.photoUrl = photo.url),
@@ -84,7 +84,7 @@ export class PhotoEditorComponent implements OnInit {
       file.withCredentials = false;
     };
 
-    this.uploader.onSuccessItem = (items, response, status, headers) => {
+    this.uploader.onSuccessItem = (items, response) => {
       const photo = JSON.parse(response);
       const updatedMember = { ...this.member() };
       updatedMember.photos.push(photo);

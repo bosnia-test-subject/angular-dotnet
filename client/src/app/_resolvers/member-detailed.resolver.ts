@@ -5,6 +5,7 @@ import { MembersService } from '../_services/members.service';
 
 export const memberDetailedResolver: ResolveFn<Member | null> = (
   route,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   state
 ) => {
   const memberService = inject(MembersService);

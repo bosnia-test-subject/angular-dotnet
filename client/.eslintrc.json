@@ -16,6 +16,7 @@
       ],
       "rules": {
         "unused-imports/no-unused-imports": "error",
+        "@typescript-eslint/no-explicit-any": "warn",
         "@angular-eslint/directive-selector": [
           "error",
           {
