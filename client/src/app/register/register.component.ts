@@ -1,8 +1,15 @@
 import { Component, inject, OnInit, Output, EventEmitter } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { AccountService } from '../_services/account.service';
-import { TextInputComponent } from "../_forms/text-input/text-input.component";
-import { DatePickerComponent } from "../_forms/date-picker/date-picker.component";
+import { TextInputComponent } from '../_forms/text-input/text-input.component';
+import { DatePickerComponent } from '../_forms/date-picker/date-picker.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,7 +17,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [ReactiveFormsModule, TextInputComponent, DatePickerComponent],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrl: './register.component.css',
 })
 export class RegisterComponent implements OnInit {
   private acountService = inject(AccountService);
@@ -30,8 +37,14 @@ export class RegisterComponent implements OnInit {
       dateOfBirth: ['', Validators.required],
       city: ['', Validators.required],
       country: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
-      confirmPassword: ['', [Validators.required, this.matchValues('password')]],
+      password: [
+        '',
+        [Validators.required, Validators.minLength(4), Validators.maxLength(8)],
+      ],
+      confirmPassword: [
+        '',
+        [Validators.required, this.matchValues('password')],
+      ],
     });
 
     this.registerForm.controls['password'].valueChanges.subscribe(() => {
@@ -41,7 +54,9 @@ export class RegisterComponent implements OnInit {
 
   matchValues(matchTo: string): ValidatorFn {
     return (control: AbstractControl) => {
-      return control.value === control.parent?.get(matchTo)?.value ? null : { isMatching: true };
+      return control.value === control.parent?.get(matchTo)?.value
+        ? null
+        : { isMatching: true };
     };
   }
 
@@ -60,7 +75,7 @@ export class RegisterComponent implements OnInit {
       },
       error: error => {
         this.validationErrors = error.errors || [error.message];
-      }
+      },
     });
   }
 

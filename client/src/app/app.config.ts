@@ -17,11 +17,17 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([errorInterceptor, jwtInterceptor, loadingInterceptor])),
+    provideHttpClient(
+      withInterceptors([errorInterceptor, jwtInterceptor, loadingInterceptor])
+    ),
     provideAnimations(),
     provideToastr({
-      positionClass: 'toast-bottom-right'
+      positionClass: 'toast-bottom-right',
     }),
-    importProvidersFrom(NgxSpinnerModule, TimeagoModule.forRoot(), ModalModule.forRoot())
-  ]
+    importProvidersFrom(
+      NgxSpinnerModule,
+      TimeagoModule.forRoot(),
+      ModalModule.forRoot()
+    ),
+  ],
 };

@@ -8,7 +8,7 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [],
   templateUrl: './photo-management.component.html',
-  styleUrl: './photo-management.component.css'
+  styleUrl: './photo-management.component.css',
 })
 export class PhotoManagementComponent implements OnInit {
   adminService = inject(AdminService);
@@ -19,42 +19,34 @@ export class PhotoManagementComponent implements OnInit {
     this.getApprovalPhotos();
   }
   // task 19
-  approvePhoto(id: number) 
-  {
-    return this.adminService.approvePhoto(id).subscribe(
-      {
-        next: response => 
-          {
-            this.toastr.success("Photo succesfully approved");
-            this.getApprovalPhotos();
-            console.log("Photo approved");
-          } ,
-        error: error => console.log(error),
-      })
+  approvePhoto(id: number) {
+    return this.adminService.approvePhoto(id).subscribe({
+      next: response => {
+        this.toastr.success('Photo succesfully approved');
+        this.getApprovalPhotos();
+        console.log('Photo approved');
+      },
+      error: error => console.log(error),
+    });
   }
   // task 19
-  rejectPhoto(id: number) 
-  {
-    return this.adminService.rejectPhoto(id).subscribe(
-      {
-        next: response => 
-          {
-            this.toastr.success("Photo succesfully rejected");
-            this.getApprovalPhotos();
-          },
-        error: error => console.log(error),
-      })
+  rejectPhoto(id: number) {
+    return this.adminService.rejectPhoto(id).subscribe({
+      next: response => {
+        this.toastr.success('Photo succesfully rejected');
+        this.getApprovalPhotos();
+      },
+      error: error => console.log(error),
+    });
   }
   // task 19
-  getApprovalPhotos() 
-  {
-    return this.adminService.getPhotosForApproval().subscribe(
-      {
-        next: response => 
-          {
-            this.photos = response;
-          },
-        error: error => this.toastr.error("Something unexpected happened: " + error),
-      })
+  getApprovalPhotos() {
+    return this.adminService.getPhotosForApproval().subscribe({
+      next: response => {
+        this.photos = response;
+      },
+      error: error =>
+        this.toastr.error('Something unexpected happened: ' + error),
+    });
   }
 }

@@ -1,9 +1,16 @@
-import { Directive, inject, Input, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
+import {
+  Directive,
+  inject,
+  Input,
+  OnInit,
+  TemplateRef,
+  ViewContainerRef,
+} from '@angular/core';
 import { AccountService } from '../_services/account.service';
 
 @Directive({
   selector: '[appHasRole]', // *appHasRole
-  standalone: true
+  standalone: true,
 })
 export class HasRoleDirective implements OnInit {
   @Input() appHasRole: string[] = [];
@@ -11,14 +18,15 @@ export class HasRoleDirective implements OnInit {
   private viewContainerRef = inject(ViewContainerRef);
   private templateRef = inject(TemplateRef);
 
-
   ngOnInit(): void {
-    if(this.accountService.roles().some((r: string) => this.appHasRole.includes(r))) 
-      {
-        this.viewContainerRef.createEmbeddedView(this.templateRef);
-      } else 
-      {
-        this.viewContainerRef.clear();
-      }
+    if (
+      this.accountService
+        .roles()
+        .some((r: string) => this.appHasRole.includes(r))
+    ) {
+      this.viewContainerRef.createEmbeddedView(this.templateRef);
+    } else {
+      this.viewContainerRef.clear();
+    }
   }
 }

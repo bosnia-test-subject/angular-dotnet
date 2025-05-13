@@ -1,5 +1,10 @@
 {
   "dependencies": {
     "ng2-file-upload": "^8.0.0"
-  }
+  },
+  "scripts": {
+  "lint": "eslint . --ext .ts,.html",
+  "format": "prettier --write \"**/*.{ts,html,css,scss,md,json}\"",
+  "lint:fix": "npm run lint -- --fix"
+}
 }
