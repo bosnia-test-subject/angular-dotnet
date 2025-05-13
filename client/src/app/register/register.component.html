@@ -15,38 +15,38 @@
     </div>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['username'])"
+    formControlName="username"
     [label]="'Username'"
     ></app-text-input>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['knownAs'])"
+    formControlName="knownAs"
     [label]="'Known as'"
     ></app-text-input>
 
     <app-date-picker
-    [formControl]="$any(registerForm.controls['dateOfBirth'])"
+    formControlName="dateOfBirth"
     [label]="'Date of birth'" [maxDate]="maxDate"
     ></app-date-picker>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['city'])"
+    formControlName="city"
     [label]="'City'"
     ></app-text-input>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['country'])"
+    formControlName="country"
     [label]="'Country'"
     ></app-text-input>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['password'])"
+    formControlName="password"
     [label]="'Password'"
     [type]="'password'"
     ></app-text-input>
 
     <app-text-input
-    [formControl]="$any(registerForm.controls['confirmPassword'])"
+    formControlName="confirmPassword"
     [label]="'Confirm password'"
     [type]="'password'"
     ></app-text-input>

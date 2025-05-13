@@ -1,11 +1,11 @@
 <div class="d-flex">
 @if (photos !== null) 
 {
-    @for (photo of photos; track $index) 
+    @for (photo of photos; track photo.id) 
     {
         <div class="card align-items-center text-center m-2">
             <h5>{{photo.username}}</h5>
-            <img style="height: 150px; width: 150px;" src="{{photo.url}}" alt="{{photo.username}}">
+            <img class="photo-property" src="{{photo.url}}" alt="{{photo.username}}">
             <div class="d-flex mt-4 shadow">
                 <button (click)="approvePhoto(photo.id)" class="btn btn-success me-2">Approve</button>
                 <button (click)="rejectPhoto(photo.id)" class="btn btn-danger">Reject</button>
@@ -15,6 +15,6 @@
 }
 @else 
 {
-    <p>There are no unapproved photos for displa. Please try again later.</p>
+    <p>There are no unapproved photos for display. Please try again later.</p>
 }
 </div>

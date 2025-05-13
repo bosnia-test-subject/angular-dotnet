@@ -43,6 +43,7 @@ export class MembersService {
       {
         next: response => 
           {
+            console.log(response);
             setPaginatedResponse(response, this.paginatedResult);
             this.memberCache.set(Object.values(this.userParams()).join('-'), response);
           },

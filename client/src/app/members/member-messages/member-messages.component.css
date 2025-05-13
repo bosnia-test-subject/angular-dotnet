@@ -19,3 +19,9 @@
 {
     max-height: 50px;
 }
+.scrollable 
+{
+    overflow-y: scroll; 
+    max-height: 500px; 
+    scroll-behavior: smooth;
+}
