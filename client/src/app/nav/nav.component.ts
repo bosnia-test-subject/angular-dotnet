@@ -10,29 +10,33 @@ import { HasRoleDirective } from '../_directives/has-role.directive';
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [FormsModule, BsDropdownModule, RouterLink, RouterLinkActive, HasRoleDirective],
+  imports: [
+    FormsModule,
+    BsDropdownModule,
+    RouterLink,
+    RouterLinkActive,
+    HasRoleDirective,
+  ],
   templateUrl: './nav.component.html',
-  styleUrl: './nav.component.css'
+  styleUrl: './nav.component.css',
 })
 export class NavComponent {
   private router = inject(Router);
   accountService = inject(AccountService);
   private toastr = inject(ToastrService);
-  model: any = {}
+  model: any = {};
 
   login() {
     this.accountService.login(this.model).subscribe({
-      next: _ => {
-        this.router.navigateByUrl('/members')
+      next: () => {
+        this.router.navigateByUrl('/members');
       },
       error: error => this.toastr.error(error.error),
     });
   }
 
-  logout() 
-  {
+  logout() {
     this.router.navigateByUrl('/');
     this.accountService.logout();
   }
-  
 }

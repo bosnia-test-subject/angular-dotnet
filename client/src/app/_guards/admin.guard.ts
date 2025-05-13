@@ -3,16 +3,17 @@ import { CanActivateFn } from '@angular/router';
 import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const adminGuard: CanActivateFn = (route, state) => {
   const accountService = inject(AccountService);
   const toastr = inject(ToastrService);
-  
-    if (accountService.roles().includes('Admin') ||
-  accountService.roles().includes('Moderator')) 
-  {
+
+  if (
+    accountService.roles().includes('Admin') ||
+    accountService.roles().includes('Moderator')
+  ) {
     return true;
-  } else 
-  {
+  } else {
     toastr.error('You cannot enter this area');
     return false;
   }

@@ -1,9 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MembersService } from '../../_services/members.service';
-import { MemberCardComponent } from "../member-card/member-card.component";
+import { MemberCardComponent } from '../member-card/member-card.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
-import { AccountService } from '../../_services/account.service';
-import { UserParams } from '../../_models/userParams';
 import { FormsModule } from '@angular/forms';
 import { ButtonsModule } from 'ngx-bootstrap/buttons';
 
@@ -12,27 +10,26 @@ import { ButtonsModule } from 'ngx-bootstrap/buttons';
   standalone: true,
   imports: [MemberCardComponent, PaginationModule, FormsModule, ButtonsModule],
   templateUrl: './member-list.component.html',
-  styleUrl: './member-list.component.css'
+  styleUrl: './member-list.component.css',
 })
-export class MemberListComponent implements OnInit 
-{
+export class MemberListComponent implements OnInit {
   memberService = inject(MembersService);
   currentPage = 1;
-  genderList = [{value: 'male', display: 'Males'}, 
-    {value: 'female', display: 'females'}];
+  genderList = [
+    { value: 'male', display: 'Males' },
+    { value: 'female', display: 'females' },
+  ];
 
   ngOnInit(): void {
-    if(!this.memberService.paginatedResult()) this.loadMembers();
+    if (!this.memberService.paginatedResult()) this.loadMembers();
   }
 
-  resetFilters() 
-  {
+  resetFilters() {
     this.memberService.resetUserParams();
     this.loadMembers();
   }
 
-  loadMembers() 
-  {
+  loadMembers() {
     this.memberService.getMembers();
   }
 
@@ -40,5 +37,4 @@ export class MemberListComponent implements OnInit
     this.currentPage = event.page;
     this.loadMembers();
   }
-
 }

@@ -4,7 +4,7 @@ import { ConfirmDialogComponent } from '../modals/confirm-dialog/confirm-dialog.
 import { map } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfirmService {
   bsModalRef?: BsModalRef;
@@ -15,28 +15,22 @@ export class ConfirmService {
     message = 'Are you sure you want to do this?',
     btnOkText = 'Ok',
     btnCancelText = 'Cancel'
-  ) 
-  {
-    const config: ModalOptions = 
-    {
-      initialState: 
-      {
+  ) {
+    const config: ModalOptions = {
+      initialState: {
         title,
         message,
         btnOkText,
-        btnCancelText
-      }
+        btnCancelText,
+      },
     };
     this.bsModalRef = this.modalService.show(ConfirmDialogComponent, config);
-    return this.bsModalRef.onHidden?.pipe
-    (
-      map(() => 
-        {
-          if(this.bsModalRef?.content) 
-            {
-              return this.bsModalRef.content.result;
-            } else return false;
-        })
-    )
+    return this.bsModalRef.onHidden?.pipe(
+      map(() => {
+        if (this.bsModalRef?.content) {
+          return this.bsModalRef.content.result;
+        } else return false;
+      })
+    );
   }
 }

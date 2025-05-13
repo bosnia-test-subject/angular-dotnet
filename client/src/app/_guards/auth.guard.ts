@@ -3,17 +3,15 @@ import { CanActivateFn } from '@angular/router';
 import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const authGuard: CanActivateFn = (route, state) => {
-
   const accountService = inject(AccountService);
   const toastr = inject(ToastrService);
 
-  if (accountService.currentUser()) 
-    {
-      return true;
-    }
-    else {
-      toastr.error('You shall not pass');
-      return false;
-    }
+  if (accountService.currentUser()) {
+    return true;
+  } else {
+    toastr.error('You shall not pass');
+    return false;
+  }
 };
