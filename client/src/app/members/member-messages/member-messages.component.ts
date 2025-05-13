@@ -20,7 +20,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 export class MemberMessagesComponent implements AfterViewChecked {
   @ViewChild('messageForm') messageForm?: NgForm;
   @ViewChild('scrollMe') scrollContainer?: any;
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   username = input.required<string>();
   messageContent = '';
 
@@ -31,6 +31,10 @@ export class MemberMessagesComponent implements AfterViewChecked {
         this.messageForm?.reset();
         this.scrollToBottom();
       });
+  }
+
+  getMessageThread() {
+    return this.messageService.messageThread();
   }
 
   ngAfterViewChecked(): void {}

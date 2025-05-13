@@ -13,7 +13,7 @@ import { ButtonsModule } from 'ngx-bootstrap/buttons';
   styleUrl: './member-list.component.css',
 })
 export class MemberListComponent implements OnInit {
-  memberService = inject(MembersService);
+  private memberService = inject(MembersService);
   currentPage = 1;
   genderList = [
     { value: 'male', display: 'Males' },
@@ -22,6 +22,13 @@ export class MemberListComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.memberService.paginatedResult()) this.loadMembers();
+  }
+
+  getPaginatedResult() {
+    return this.memberService.paginatedResult();
+  }
+  getUserParams() {
+    return this.memberService.userParams();
   }
 
   resetFilters() {

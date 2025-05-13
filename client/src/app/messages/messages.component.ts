@@ -21,11 +21,15 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
   styleUrl: './messages.component.css',
 })
 export class MessagesComponent implements OnInit {
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   container = 'Inbox';
   pageNumber = 1;
   pageSize = 5;
   isOutbox = this.container === 'Outbox';
+
+  getPaginatedResult() {
+    return this.messageService.paginatedResult();
+  }
 
   ngOnInit(): void {
     this.loadMessages();

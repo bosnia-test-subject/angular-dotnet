@@ -11,7 +11,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './photo-management.component.css',
 })
 export class PhotoManagementComponent implements OnInit {
-  adminService = inject(AdminService);
+  private adminService = inject(AdminService);
   toastr = inject(ToastrService);
   photos: Photo[] = [];
 

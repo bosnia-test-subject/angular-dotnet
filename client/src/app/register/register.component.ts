@@ -1,4 +1,11 @@
-import { Component, inject, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  Output,
+  EventEmitter,
+  OnDestroy,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,6 +18,7 @@ import { AccountService } from '../_services/account.service';
 import { TextInputComponent } from '../_forms/text-input/text-input.component';
 import { DatePickerComponent } from '../_forms/date-picker/date-picker.component';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -19,10 +27,12 @@ import { Router } from '@angular/router';
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
   private acountService = inject(AccountService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private destroy$ = new Subject<void>();
+
   @Output() cancelRegister = new EventEmitter<boolean>();
 
   registerForm: FormGroup = new FormGroup({});
@@ -47,9 +57,11 @@ export class RegisterComponent implements OnInit {
       ],
     });
 
-    this.registerForm.controls['password'].valueChanges.subscribe(() => {
-      this.registerForm.controls['confirmPassword'].updateValueAndValidity();
-    });
+    this.registerForm.controls['password'].valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.registerForm.controls['confirmPassword'].updateValueAndValidity();
+      });
   }
 
   matchValues(matchTo: string): ValidatorFn {
@@ -86,5 +98,9 @@ export class RegisterComponent implements OnInit {
   private getDateOnly(dob: string | undefined) {
     if (!dob) return;
     return new Date(dob).toISOString().slice(0, 10);
+  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

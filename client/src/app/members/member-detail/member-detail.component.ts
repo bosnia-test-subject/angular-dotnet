@@ -10,6 +10,7 @@ import { MessageService } from '../../_services/message.service';
 import { PresenceService } from '../../_services/presence.service';
 import { AccountService } from '../../_services/account.service';
 import { HubConnectionState } from '@microsoft/signalr';
+import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-member-detail',
   standalone: true,
@@ -30,13 +31,14 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private accountService = inject(AccountService);
+  private destroy$ = new Subject<void>();
 
   member: Member = {} as Member;
   images: GalleryItem[] = [];
   activeTab?: TabDirective;
 
   ngOnInit(): void {
-    this.route.data.subscribe({
+    this.route.data.pipe(takeUntil(this.destroy$)).subscribe({
       next: data => {
         this.member = data['member'];
         this.member &&
@@ -48,11 +50,11 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.route.paramMap.subscribe({
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe({
       next: () => this.onRouteParamsChange(),
     });
 
-    this.route.queryParams.subscribe({
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe({
       next: params => {
         params['tab'] && this.selectTab(params['tab']);
       },
@@ -96,6 +98,8 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.messageService.stopHubConnection();
   }
 }
