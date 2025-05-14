@@ -10,11 +10,13 @@ import { MessageService } from '../../_services/message.service';
 import { TimeagoModule } from 'ngx-timeago';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TextInputComponent } from '../../_forms/text-input/text-input.component';
+import { InputWrapperComponent } from "../../_forms/input-wrapper/input-wrapper.component";
+import { ButtonWrapperComponent } from "../../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-member-messages',
   standalone: true,
-  imports: [TimeagoModule, FormsModule, TextInputComponent],
+  imports: [TimeagoModule, FormsModule, TextInputComponent, InputWrapperComponent, ButtonWrapperComponent],
   templateUrl: './member-messages.component.html',
   styleUrl: './member-messages.component.css',
 })

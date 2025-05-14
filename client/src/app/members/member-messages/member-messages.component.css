@@ -20,3 +20,6 @@
   max-height: 500px;
   scroll-behavior: smooth;
 }
+.width-100 {
+  width: 100%;
+}

@@ -12,6 +12,7 @@ import { ButtonsModule } from 'ngx-bootstrap/buttons';
 })
 export class ButtonWrapperComponent {
   @Input() text: string = '';
+  @Input() disabled: boolean = false;
   @Input() type: string = 'button';
   @Input() classStyle: string = 'btn btn-primary';
   @Input() btnRadio: string = '';
