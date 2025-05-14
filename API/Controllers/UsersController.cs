@@ -3,6 +3,7 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
+using API.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,120 +11,126 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUnitOfWork unitOfWork, 
-IMapper mapper, IPhotoService photoService) : BaseApiController
+public class UsersController : BaseApiController
 {
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams) 
-    {
-        userParams.CurrentUsername = User.GetUsername();
-        var users = await unitOfWork.UserRepository.GetMembersAsync(userParams);
+    private readonly IUserService _userService;
+    private readonly ILogger<UserService> _logger;
 
-        Response.AddPaginationHeader(users);
-        return Ok(users);
+    public UsersController(IUserService userService, ILogger<UserService> logger)
+    {
+        _userService = userService;
+        _logger = logger;
     }
-    // moramo staviti curly brackets 
-    // unutar http metode zbog dynamic assigning.
-    [HttpGet("{username}")] //api/users/3
-    public async Task<ActionResult<MemberDto>> GetUser(string username) 
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        var user = await unitOfWork.UserRepository.GetMemberAsync(username);
+        try
+        {
+            userParams.CurrentUsername = User.GetUsername();
+            var users = await _userService.GetUsersAsync(userParams);
+            Response.AddPaginationHeader(users);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching users with user parameters: {userParams}", userParams);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
-        if (user == null) return NotFound();
-
-        return user;
+    [HttpGet("{username}")]
+    public async Task<ActionResult<MemberDto>> GetUser(string username)
+    {
+        try
+        {
+            var user = await _userService.GetUserAsync(username);
+            if (user == null)
+            {
+                _logger.LogWarning("User with username {username} not found.", username);
+                return NotFound($"User with username {username} not found.");
+            }
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching user with username: {username}", username);
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto) 
+    public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-
-        if (user == null) return BadRequest("Could not find user!");
-
-        mapper.Map(memberUpdateDto, user);
-        // pointless line ako korisnik ne promjeni nista vrati mu se badrequest sto je i okej.
-       // unitOfWork.UserRepository.Update(user);
-
-        if(await unitOfWork.Complete()) return NoContent();
-
-        return BadRequest("Failed to update the user!");
+        try
+        {
+            await _userService.UpdateUserAsync(User.GetUsername(), memberUpdateDto);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User with username {username} not found.", User.GetUsername());
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating user with username: {username}", User.GetUsername());
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPost("add-photo")]
-    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file) 
+    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-
-        if(user == null) return BadRequest("Cannot update user");
-
-        var result = await photoService.AddPhotoAsync(file);
-
-        if (result.Error != null) return BadRequest(result.Error.Message);
-
-        var photo = new Photo 
+        try
         {
-            Url = result.SecureUrl.AbsoluteUri,
-            PublicId = result.PublicId,
-            // PHOTO MANAGEMENT TASK
-            isApproved = false
-        };
-
-     //   if(user.Photos.Count == 0) photo.IsMain = true;
-
-        user.Photos.Add(photo);
-
-        if(await unitOfWork.Complete()) 
-        return CreatedAtAction(nameof(GetUser), 
-        new {username = user.UserName}, 
-        mapper.Map<PhotoDto>(photo));
-
-        return BadRequest("Problem adding photo");
+            var photo = await _userService.AddPhotoAsync(User.GetUsername(), file);
+            return CreatedAtAction(nameof(GetUser), new { username = User.GetUsername() }, photo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding photo for user: {username}", User.GetUsername());
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPut("set-main-photo/{photoId:int}")]
-    public async Task<ActionResult> SetMainPhoto(int photoId) 
+    public async Task<ActionResult> SetMainPhoto(int photoId)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-
-        if (user == null) return BadRequest("Could not find user");
-
-        var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
-
-        if(photo == null || photo.IsMain) return BadRequest("Cannot use this as main photo!");
-
-        var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
-        if(currentMain != null) currentMain.IsMain = false;
-        photo.IsMain = true;
-
-        if(await unitOfWork.Complete()) return NoContent();
-
-        return BadRequest("Problem setting main photo!");
+        try
+        {
+            await _userService.SetMainPhotoAsync(User.GetUsername(), photoId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {photoId} not found for user: {username}", photoId, User.GetUsername());
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while setting main photo for user: {username}", User.GetUsername());
+            return StatusCode(500, "Internal server error");
+        }
     }
-
 
     [HttpDelete("delete-photo/{photoId}")]
-    public async Task<ActionResult> DeletePhoto(int photoId) 
+    public async Task<ActionResult> DeletePhoto(int photoId)
     {
-        var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
-
-        if (user == null) return BadRequest("User not found");
-
-        var photo = await unitOfWork.PhotosRepository.GetPhotoById(photoId);
-
-        if(photo == null || photo.IsMain) return BadRequest("This photo cannot be deleted!");
-
-        if(photo.PublicId != null) 
+        try
         {
-            var result = await photoService.DeletePhotoAsync(photo.PublicId);
-            if(result.Error != null) return BadRequest(result.Error.Message);
+            await _userService.DeletePhotoAsync(User.GetUsername(), photoId);
+            return Ok();
         }
-
-        user.Photos.Remove(photo);
-
-        if(await unitOfWork.Complete()) return Ok();
-
-        return BadRequest("Error deleting photo!");
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {photoId} not found for user: {username}", photoId, User.GetUsername());
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while deleting photo for user: {username}", User.GetUsername());
+            return StatusCode(500, "Internal server error");
+        }
     }
-
 }
