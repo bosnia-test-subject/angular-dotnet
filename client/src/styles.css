@@ -1,4 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root{
+  --primary-color: #4ab59a; 
+  --test-color: #6d7fc3;
+}
 .tab-panel {
   border: 1px solid #ddd;
   padding: 10px;
