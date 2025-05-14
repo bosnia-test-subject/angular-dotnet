@@ -6,7 +6,7 @@
         alt="{{ member.knownAs }}"
         class="card-img img-thumbnail" />
       <div class="card-body">
-        @if (presenceService.onlineUsers().includes(member.userName)) {
+        @if (checkOnlineUsers().includes(member.userName)) {
           <div class="mb-2">
             <i class="fa fa-user-circle text-success"></i> Online Now
           </div>

@@ -26,7 +26,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class MemberDetailComponent implements OnInit, OnDestroy {
   @ViewChild('memberTabs', { static: true }) memberTabs?: TabsetComponent;
-  presenceService = inject(PresenceService);
+  private presenceService = inject(PresenceService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -74,6 +74,10 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
     } else {
       this.messageService.stopHubConnection();
     }
+  }
+
+  checkOnlineUsers() {
+    return this.presenceService.onlineUsers();
   }
 
   onRouteParamsChange() {
