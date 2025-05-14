@@ -6,6 +6,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { Message } from '../_models/message';
 import { RouterLink } from '@angular/router';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { ButtonWrapperComponent } from "../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-messages',
@@ -16,16 +17,21 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
     TimeagoModule,
     RouterLink,
     PaginationModule,
-  ],
+    ButtonWrapperComponent
+],
   templateUrl: './messages.component.html',
   styleUrl: './messages.component.css',
 })
 export class MessagesComponent implements OnInit {
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   container = 'Inbox';
   pageNumber = 1;
   pageSize = 5;
   isOutbox = this.container === 'Outbox';
+
+  getPaginatedResult() {
+    return this.messageService.paginatedResult();
+  }
 
   ngOnInit(): void {
     this.loadMessages();
@@ -61,8 +67,9 @@ export class MessagesComponent implements OnInit {
   }
 
   pageChanged(event: any) {
-    if (this.pageNumber != event.page) {
+    if (this.pageNumber !== event.page) {
       this.pageNumber = event.page;
+      console.log(this.pageNumber);
       this.loadMessages();
     }
   }

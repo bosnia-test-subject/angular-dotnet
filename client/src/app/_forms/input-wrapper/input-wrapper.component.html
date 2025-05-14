@@ -1,0 +1,12 @@
+<!-- eslint-disable @angular-eslint/template/label-has-associated-control -->
+<div class="mb-3 form-floating">
+  <input
+    class="form-control"
+    [type]="type"
+    [name]="name"
+    [value]="value"
+    (input)="handleInputChange($event)"
+    (blur)="onTouched()"
+    placeholder="{{ label }}" />
+  <label>{{ label }}</label>
+</div>

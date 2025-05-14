@@ -6,6 +6,8 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HasRoleDirective } from '../_directives/has-role.directive';
+import { InputWrapperComponent } from "../_forms/input-wrapper/input-wrapper.component";
+import { ButtonWrapperComponent } from "../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-nav',
@@ -16,7 +18,9 @@ import { HasRoleDirective } from '../_directives/has-role.directive';
     RouterLink,
     RouterLinkActive,
     HasRoleDirective,
-  ],
+    InputWrapperComponent,
+    ButtonWrapperComponent
+],
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.css',
 })

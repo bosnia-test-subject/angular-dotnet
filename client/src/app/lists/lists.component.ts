@@ -13,13 +13,17 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
   styleUrl: './lists.component.css',
 })
 export class ListsComponent implements OnInit, OnDestroy {
-  likesService = inject(LikesService);
+  private likesService = inject(LikesService);
   predicate = 'liked';
   pageNumber = 1;
   pageSize = 5;
 
   ngOnInit(): void {
     this.loadLikes();
+  }
+
+  getPaginatedResult() {
+    return this.likesService.paginatedResult();
   }
 
   ngOnDestroy(): void {

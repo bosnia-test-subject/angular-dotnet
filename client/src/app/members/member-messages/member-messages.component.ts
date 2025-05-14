@@ -9,18 +9,21 @@ import {
 import { MessageService } from '../../_services/message.service';
 import { TimeagoModule } from 'ngx-timeago';
 import { FormsModule, NgForm } from '@angular/forms';
+import { TextInputComponent } from '../../_forms/text-input/text-input.component';
+import { InputWrapperComponent } from "../../_forms/input-wrapper/input-wrapper.component";
+import { ButtonWrapperComponent } from "../../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-member-messages',
   standalone: true,
-  imports: [TimeagoModule, FormsModule],
+  imports: [TimeagoModule, FormsModule, TextInputComponent, InputWrapperComponent, ButtonWrapperComponent],
   templateUrl: './member-messages.component.html',
   styleUrl: './member-messages.component.css',
 })
 export class MemberMessagesComponent implements AfterViewChecked {
   @ViewChild('messageForm') messageForm?: NgForm;
   @ViewChild('scrollMe') scrollContainer?: any;
-  messageService = inject(MessageService);
+  private messageService = inject(MessageService);
   username = input.required<string>();
   messageContent = '';
 
@@ -31,6 +34,10 @@ export class MemberMessagesComponent implements AfterViewChecked {
         this.messageForm?.reset();
         this.scrollToBottom();
       });
+  }
+
+  getMessageThread() {
+    return this.messageService.messageThread();
   }
 
   ngAfterViewChecked(): void {}

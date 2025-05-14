@@ -7,13 +7,14 @@
           class="photo-property"
           src="{{ photo.url }}"
           alt="{{ photo.username }}" />
-        <div class="d-flex mt-4 shadow">
-          <button (click)="approvePhoto(photo.id)" class="btn btn-success me-2">
-            Approve
-          </button>
-          <button (click)="rejectPhoto(photo.id)" class="btn btn-danger">
-            Reject
-          </button>
+        <div class="d-flex mb-2 mt-4 shadow">
+          <app-button-wrapper (click)="approvePhoto(photo.id)" text="Approve">
+          </app-button-wrapper>
+          <app-button-wrapper
+            classStyle="btn btn-danger"
+            (click)="rejectPhoto(photo.id)"
+            text="Reject">
+          </app-button-wrapper>
         </div>
       </div>
     }

@@ -2,16 +2,17 @@ import { Component, inject, OnInit } from '@angular/core';
 import { AdminService } from '../../_services/admin.service';
 import { Photo } from '../../_models/photo';
 import { ToastrService } from 'ngx-toastr';
+import { ButtonWrapperComponent } from "../../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-photo-management',
   standalone: true,
-  imports: [],
+  imports: [ButtonWrapperComponent],
   templateUrl: './photo-management.component.html',
   styleUrl: './photo-management.component.css',
 })
 export class PhotoManagementComponent implements OnInit {
-  adminService = inject(AdminService);
+  private adminService = inject(AdminService);
   toastr = inject(ToastrService);
   photos: Photo[] = [];
 

@@ -20,7 +20,7 @@
   @if (validationErrors.length > 0) {
     <div class="row mt-5">
       <ul class="text-danger">
-        @for (error of validationErrors; track $index) {
+        @for (error of validationErrors; track error) {
           <li>{{ error }}</li>
         }
       </ul>

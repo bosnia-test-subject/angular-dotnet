@@ -14,7 +14,7 @@ import { NgxSpinnerComponent } from 'ngx-spinner';
 })
 export class AppComponent implements OnInit {
   http = inject(HttpClient);
-  accountService = inject(AccountService);
+  private accountService = inject(AccountService);
   // evade hardcoding
   adress: string = 'https://localhost:5001/api/users';
   title = 'Dating App';
