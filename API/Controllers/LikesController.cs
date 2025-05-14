@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
@@ -7,50 +6,68 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class LikesController(IUnitOfWork unitOfWork) : BaseApiController
+public class LikesController : BaseApiController
 {
-    [HttpPost("{targetUserId:int}")]
-    public async Task<ActionResult> ToggleLike(int targetUserId) 
+    private readonly ILikesService _likesService;
+    private readonly ILogger<LikesController> _logger;
+
+    public LikesController(ILikesService likesService, ILogger<LikesController> logger)
     {
-        var sourceUserId = User.GetUserId();
+        _likesService = likesService;
+        _logger = logger;
+    }
 
-        if(sourceUserId == targetUserId) return BadRequest("You cannot like yourself!");
-
-        var existingLike = await unitOfWork.LikesRepository.GetUserLike(sourceUserId, targetUserId);
-
-        if(existingLike == null) 
+    [HttpPost("{targetUserId:int}")]
+    public async Task<ActionResult> ToggleLike(int targetUserId)
+    {
+        try
         {
-            var like = new UserLike 
-            {
-                SourceUserId = sourceUserId,
-                TargetUserId = targetUserId
-            };
-
-            unitOfWork.LikesRepository.AddLike(like);
+            var sourceUserId = User.GetUserId();
+            await _likesService.ToggleLikeAsync(sourceUserId, targetUserId);
+            return Ok();
         }
-        else 
+        catch (InvalidOperationException ex)
         {
-            unitOfWork.LikesRepository.DeleteLike(existingLike);
+            _logger.LogWarning(ex, "Invalid operation while toggling like for targetUserId: {targetUserId}", targetUserId);
+            return BadRequest(ex.Message);
         }
-
-        if(await unitOfWork.Complete()) return Ok();
-
-        return BadRequest("Failed to update like!");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while toggling like for targetUserId: {targetUserId}", targetUserId);
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpGet("list")]
-    public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds() 
+    public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
     {
-        return Ok(await unitOfWork.LikesRepository.GetCurrentUserIds(User.GetUserId()));
+        try
+        {
+            var userId = User.GetUserId();
+            var likeIds = await _likesService.GetCurrentUserLikeIdsAsync(userId);
+            return Ok(likeIds);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while fetching current user like IDs.");
+            return StatusCode(500, "Internal server error");
+        }
     }
+
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> getUserLikes([FromQuery]LikesParams likesParams) 
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery] LikesParams likesParams)
     {
-        likesParams.UserId = User.GetUserId();
-        var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
-
-        Response.AddPaginationHeader(users);
-
-        return Ok(users);
+        try
+        {
+            likesParams.UserId = User.GetUserId();
+            var users = await _likesService.GetUserLikesAsync(likesParams);
+            Response.AddPaginationHeader(users);
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while fetching user likes.");
+            return StatusCode(500, "Internal server error");
+        }
     }
 }

@@ -22,6 +22,10 @@ public static class ApplicationServiceExtensions
         services.AddCors();
         // Services
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<ILikesService, LikesService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<ITokenService, TokenService>();
         // repositories
         services.AddScoped<IUserRepository, UserRepository>();
