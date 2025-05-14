@@ -9,11 +9,12 @@ import {
 import { MessageService } from '../../_services/message.service';
 import { TimeagoModule } from 'ngx-timeago';
 import { FormsModule, NgForm } from '@angular/forms';
+import { TextInputComponent } from "../../_forms/text-input/text-input.component";
 
 @Component({
   selector: 'app-member-messages',
   standalone: true,
-  imports: [TimeagoModule, FormsModule],
+  imports: [TimeagoModule, FormsModule, TextInputComponent],
   templateUrl: './member-messages.component.html',
   styleUrl: './member-messages.component.css',
 })

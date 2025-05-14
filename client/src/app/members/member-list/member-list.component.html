@@ -11,9 +11,9 @@
       <div class="d-flex mx-2">
         <label for="" class="col-form-label">Age from: </label>
         <input
+          ngForm="ngForm"
           type="number"
-          class="form-control ms-1"
-          style="width: 70px"
+          class="input-width form-control ms-1"
           name="minAge"
           [(ngModel)]="getUserParams().minAge" />
       </div>
@@ -21,9 +21,9 @@
       <div class="d-flex mx-2">
         <label for="" class="col-form-label">Age to: </label>
         <input
+          ngForm="ngForm"
           type="number"
-          class="form-control ms-1"
-          style="width: 70px"
+          class="ms-1 col form-control input-width"
           name="maxAge"
           [(ngModel)]="getUserParams().maxAge" />
       </div>
@@ -31,8 +31,7 @@
         <label for="" class="col-form-label">Show: </label>
         <select
           name="gender"
-          style="width: 120px"
-          class="form-select ms-1"
+          class="form-select select-width ms-1"
           id=""
           [(ngModel)]="getUserParams().gender">
           @for (gender of genderList; track gender.value) {
@@ -87,7 +86,7 @@
       [totalItems]="(getPaginatedResult()?.pagination)!.totalItems"
       [itemsPerPage]="(getPaginatedResult()?.pagination)!.itemsPerPage"
       (pageChanged)="pageChanged($event)"
-      [(ngModel)]="currentPage"
+      [(ngModel)]="(getPaginatedResult()?.pagination)!.currentPage"
       [maxSize]="10"
       previousText="&lsaquo;"
       nextText="&rsaquo;"

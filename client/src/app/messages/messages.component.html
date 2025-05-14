@@ -34,9 +34,9 @@
   <table class="table table-hover mt-3" style="cursor: pointer">
     <thead>
       <tr>
-        <th style="width: 40%">Message</th>
-        <th style="width: 20%">From / To</th>
-        <th style="width: 20%">Sent / Received</th>
+        <th class="th-main">Message</th>
+        <th class="th-style">From / To</th>
+        <th class="th-style">Sent / Received</th>
       </tr>
     </thead>
     <tbody class="align-middle">
@@ -83,7 +83,7 @@
       [totalItems]="(getPaginatedResult()?.pagination)!.totalItems"
       [itemsPerPage]="(getPaginatedResult()?.pagination)!.itemsPerPage"
       (pageChanged)="pageChanged($event)"
-      [(ngModel)]="(getPaginatedResult()?.pagination)!.currentPage"
+      [(ngModel)]="pageNumber"
       [maxSize]="10"
       previousText="&lsaquo;"
       nextText="&rsaquo;"
