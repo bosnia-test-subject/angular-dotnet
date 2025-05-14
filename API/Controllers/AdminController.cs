@@ -1,116 +1,118 @@
-using System;
-using API.Entities;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AdminController(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService) : BaseApiController
+[Authorize(Policy = "RequireAdminRole")]
+public class AdminController : BaseApiController
 {
+    private readonly IAdminService _adminService;
+    private readonly ILogger<AdminController> _logger;
 
-    // PHOTO MANAGEMENT TASK NUM. 10.
-    [Authorize(Policy = "RequireAdminRole")]
+    public AdminController(IAdminService adminService, ILogger<AdminController> logger)
+    {
+        _adminService = adminService;
+        _logger = logger;
+    }
+
     [HttpGet("unapproved-photos")]
-    public async Task<ActionResult> GetPhotosForApproval() 
+    public async Task<ActionResult> GetPhotosForApproval()
     {
-        var photos = await unitOfWork.PhotosRepository.GetUnapprovedPhotos();
-        return Ok(photos);
-    }
-    // PHOTO MANAGEMENT TASK NUM. 12.
-    [Authorize(Policy = "RequireAdminRole")]
-    [HttpDelete("reject-photo/{id}")]
-    public async Task<ActionResult> RejectPhoto(int id) 
-    {
-        var photo = await unitOfWork.PhotosRepository.GetPhotoById(id);
-
-        if(photo == null || photo.IsMain) return BadRequest("This photo cannot be rejected!");
-
-        if(photo.PublicId != null) 
+        try
         {
-            var result = await photoService.DeletePhotoAsync(photo.PublicId);
-            if(result.Error != null) return BadRequest(result.Error.Message);
+            var photos = await _adminService.GetPhotosForApprovalAsync();
+            return Ok(photos);
         }
-
-        unitOfWork.PhotosRepository.RemovePhoto(photo);
-
-        if (await unitOfWork.Complete()) return Ok();
-        return BadRequest("Problem rejecting photo!");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching photos for approval.");
+            return StatusCode(500, "Internal server error");
+        }
     }
 
-    // PHOTO MANAGEMENT TASK NUM. 11.
-    [Authorize(Policy ="RequireAdminRole")]
     [HttpPost("approve-photo/{id}")]
-    public async Task<ActionResult> ApprovePhoto(int id) 
+    public async Task<ActionResult> ApprovePhoto(int id)
     {
-        var photo = await unitOfWork.PhotosRepository.GetPhotoById(id);
-
-        if(photo == null) return BadRequest("Photo not found!");
-
-        photo.isApproved = true;
-
-        var user = await unitOfWork.UserRepository.GetUserByIdAsync(photo.AppUserId);
-
-        if (user == null) return BadRequest("User not found!");
-
-        // Task num. 14.
-        if (!user.Photos.Any(p => p.IsMain)) 
+        try
         {
-            photo.IsMain = true;
+            await _adminService.ApprovePhotoAsync(id);
+            return Ok("Photo successfully approved.");
         }
-
-        if(await unitOfWork.Complete()) return Ok("Photo succesfully approved");
-
-        return BadRequest("Problem approving photo!");
-    }
-
-    [Authorize(Policy = "RequireAdminRole")]
-    [HttpGet("users-with-roles")]
-    public async Task<ActionResult> GetUsersWithRoles() 
-    {
-        var users = await userManager.Users
-        .OrderBy(x => x.UserName)
-        .Select(x => new 
+        catch (KeyNotFoundException ex)
         {
-            x.Id,
-            Username = x.UserName,
-            Roles = x.UserRoles.Select(r => r.Role.Name).ToList(),
-        }).ToListAsync();
-
-        return Ok(users);
+            _logger.LogWarning(ex, "Photo not found with ID: {id}", id);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while approving photo with ID: {id}", id);
+            return StatusCode(500, "Internal server error");
+        }
     }
 
-    [Authorize(Policy = "RequireAdminRole")]
+    [HttpDelete("reject-photo/{id}")]
+    public async Task<ActionResult> RejectPhoto(int id)
+    {
+        try
+        {
+            await _adminService.RejectPhotoAsync(id);
+            return Ok("Photo successfully rejected.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation while rejecting photo with ID: {id}", id);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while rejecting photo with ID: {id}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("users-with-roles")]
+    public async Task<ActionResult> GetUsersWithRoles()
+    {
+        try
+        {
+            var users = await _adminService.GetUsersWithRolesAsync();
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching users with roles.");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("edit-roles/{username}")]
-    public async Task<ActionResult> EditRoles(string username, string roles) 
+    public async Task<ActionResult> EditRoles(string username, string roles)
     {
-        if (string.IsNullOrEmpty(roles)) return BadRequest("You must select at least one role!");
-
-        var selectedRoles = roles.Split(",").ToArray();
-
-        var user = await userManager.FindByNameAsync(username);
-
-        if(user == null) return BadRequest("User not found");
-
-        var userRoles = await userManager.GetRolesAsync(user);
-
-        var result = await userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles));
-
-        if(!result.Succeeded) return BadRequest("Failed to add to roles");
-
-        result = await userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles));
-
-        if(!result.Succeeded) return BadRequest("Failed to remove from roles");
-
-        return Ok(await userManager.GetRolesAsync(user));
-    }
-
-    [Authorize(Policy = "ModeratePhotoRole")]
-    [HttpGet("photos-to-moderate")]
-    public ActionResult GetPhotosForModeration() 
-    {
-        return Ok("Only admins and moderators can see this");
+        try
+        {
+            await _adminService.EditRolesAsync(username, roles);
+            return Ok("Roles successfully updated.");
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input while editing roles for user: {username}", username);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "User not found while editing roles for user: {username}", username);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to update roles for user: {username}", username);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while editing roles for user: {username}", username);
+            return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        }
     }
 }
