@@ -68,7 +68,7 @@
   @if (validationErrors) {
     <div class="alert alert-danger">
       <ul class="mb-0">
-        @for (error of validationErrors; track $index) {
+        @for (error of validationErrors; track error) {
           <li>{{ error }}</li>
         }
       </ul>

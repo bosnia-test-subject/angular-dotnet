@@ -9,7 +9,7 @@ import {
 import { MessageService } from '../../_services/message.service';
 import { TimeagoModule } from 'ngx-timeago';
 import { FormsModule, NgForm } from '@angular/forms';
-import { TextInputComponent } from "../../_forms/text-input/text-input.component";
+import { TextInputComponent } from '../../_forms/text-input/text-input.component';
 
 @Component({
   selector: 'app-member-messages',

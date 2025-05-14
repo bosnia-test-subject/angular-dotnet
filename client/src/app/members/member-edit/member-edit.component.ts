@@ -14,6 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 import { PhotoEditorComponent } from '../photo-editor/photo-editor.component';
 import { TimeagoModule } from 'ngx-timeago';
 import { DatePipe } from '@angular/common';
+import { InputWrapperComponent } from "../../_forms/input-wrapper/input-wrapper.component";
 
 @Component({
   selector: 'app-member-edit',
@@ -24,7 +25,8 @@ import { DatePipe } from '@angular/common';
     PhotoEditorComponent,
     TimeagoModule,
     DatePipe,
-  ],
+    InputWrapperComponent
+],
   templateUrl: './member-edit.component.html',
   styleUrl: './member-edit.component.css',
 })

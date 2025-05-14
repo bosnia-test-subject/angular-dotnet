@@ -4,11 +4,20 @@ import { MemberCardComponent } from '../member-card/member-card.component';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { FormsModule } from '@angular/forms';
 import { ButtonsModule } from 'ngx-bootstrap/buttons';
+import { InputWrapperComponent } from '../../_forms/input-wrapper/input-wrapper.component';
+import { ButtonWrapperComponent } from '../../_forms/button-wrapper/button-wrapper.component';
 
 @Component({
   selector: 'app-member-list',
   standalone: true,
-  imports: [MemberCardComponent, PaginationModule, FormsModule, ButtonsModule],
+  imports: [
+    MemberCardComponent,
+    PaginationModule,
+    FormsModule,
+    ButtonsModule,
+    InputWrapperComponent,
+    ButtonWrapperComponent,
+  ],
   templateUrl: './member-list.component.html',
   styleUrl: './member-list.component.css',
 })

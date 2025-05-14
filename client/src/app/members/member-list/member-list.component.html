@@ -9,26 +9,36 @@
   <div class="container mt-3">
     <form class="d-flex mb-3" #form="ngForm" (ngSubmit)="loadMembers()">
       <div class="d-flex mx-2">
-        <label for="" class="col-form-label">Age from: </label>
+        <app-input-wrapper
+          name="minAge"
+          label="Age from:"
+          type="number"
+          [(ngModel)]="getUserParams().minAge">
+        </app-input-wrapper>
+
+        <!--         <label for="" class="col-form-label">Age from: </label>
         <input
           ngForm="ngForm"
           type="number"
           class="input-width form-control ms-1"
           name="minAge"
-          [(ngModel)]="getUserParams().minAge" />
+          [(ngModel)]="getUserParams().minAge" /> -->
       </div>
-
       <div class="d-flex mx-2">
-        <label for="" class="col-form-label">Age to: </label>
+        <app-input-wrapper
+          label="Age to:"
+          type="number"
+          name="maxAge"
+          [(ngModel)]="getUserParams().maxAge"></app-input-wrapper>
+        <!--         <label for="" class="col-form-label">Age to: </label>
         <input
           ngForm="ngForm"
           type="number"
           class="ms-1 col form-control input-width"
           name="maxAge"
-          [(ngModel)]="getUserParams().maxAge" />
+          [(ngModel)]="getUserParams().maxAge" /> -->
       </div>
-      <div class="d-flex mx-2">
-        <label for="" class="col-form-label">Show: </label>
+      <div class="d-flex flex-column mx-2">
         <select
           name="gender"
           class="form-select select-width ms-1"
@@ -42,10 +52,20 @@
         </select>
       </div>
 
-      <button class="btn btn-primary ms-1" type="submit">Apply Filters</button>
-      <button class="btn btn-info ms-1" (click)="resetFilters()">
+      <app-button-wrapper
+        type="submit"
+        text="Apply Filters"
+        name="applyBtn"></app-button-wrapper>
+      <!--       <button class="btn btn-primary ms-1" type="submit">Apply Filters</button> -->
+
+      <app-button-wrapper
+        classStyle="btn btn-info ms-1"
+        name="resetBtn"
+        text="Reset Filters"
+        (clicked)="resetFilters()"></app-button-wrapper>
+      <!--       <button class="btn btn-info ms-1" (click)="resetFilters()">
         Reset Filters
-      </button>
+      </button> -->
 
       <div class="col">
         <div class="btn-group float-end">

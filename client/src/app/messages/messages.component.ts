@@ -6,6 +6,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { Message } from '../_models/message';
 import { RouterLink } from '@angular/router';
 import { PaginationModule } from 'ngx-bootstrap/pagination';
+import { ButtonWrapperComponent } from "../_forms/button-wrapper/button-wrapper.component";
 
 @Component({
   selector: 'app-messages',
@@ -16,7 +17,8 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
     TimeagoModule,
     RouterLink,
     PaginationModule,
-  ],
+    ButtonWrapperComponent
+],
   templateUrl: './messages.component.html',
   styleUrl: './messages.component.css',
 })
