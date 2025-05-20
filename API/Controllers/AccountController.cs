@@ -1,69 +1,57 @@
-using System;
-using System.Security.Cryptography;
-using System.Text;
-using API.Data;
 using API.DTOs;
-using API.Entities;
 using API.Interfaces;
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper) : BaseApiController
+public class AccountController : BaseApiController
 {
-    // ovdje dolazimo sa account/register
-    [HttpPost("register")] 
-    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto) 
+    private readonly IAccountService _accountService;
+    private readonly ILogger<AccountController> _logger;
+
+    public AccountController(IAccountService accountService, ILogger<AccountController> logger)
     {
-        if (await UserExists(registerDto.Username)) return BadRequest("Username is taken!");
+        _accountService = accountService;
+        _logger = logger;
+    }
 
-        var user = mapper.Map<AppUser>(registerDto);
-
-        user.UserName = registerDto.Username.ToLower();
-
-        var result = await userManager.CreateAsync(user, registerDto.Password);
-
-        if(!result.Succeeded) return BadRequest(result.Errors);
-
-        return new UserDto
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+    {
+        try
         {
-            Username = user.UserName,
-            Token = await tokenService.CreateToken(user),
-            Gender = user.Gender,
-            KnownAs = user.KnownAs
-        };
+            var user = await _accountService.RegisterAsync(registerDto);
+            return Ok(user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation while registering user.");
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while registering user.");
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto) 
+    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = await userManager.Users.Include(x => x.Photos).
-        FirstOrDefaultAsync(x => x.NormalizedUserName == 
-        loginDto.Username.ToUpper());
-
-        if(user == null || user.UserName == null) return Unauthorized("Invalid username");
-
-        var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
-
-        if(!result) return Unauthorized();
-
-        return new UserDto
+        try
         {
-            Username = user.UserName,
-            KnownAs = user.KnownAs,
-            Token = await tokenService.CreateToken(user),
-            Gender = user.Gender,
-            PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
-        };
-
+            var user = await _accountService.LoginAsync(loginDto);
+            return Ok(user);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while logging in user.");
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while logging in user.");
+            return StatusCode(500, "Internal server error");
+        }
     }
-
-    private async Task<bool> UserExists(string username) 
-    {
-        return await userManager.Users.AnyAsync(x => x.NormalizedUserName == username.ToUpper());
-    }
-
 }
