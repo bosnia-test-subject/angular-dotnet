@@ -1,6 +1,3 @@
-using System;
-using System.Security.Cryptography.X509Certificates;
-
 namespace API.Entities;
 
 public class Message

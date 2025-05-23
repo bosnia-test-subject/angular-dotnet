@@ -1,10 +1,8 @@
 using API.DTOs;
 using API.Entities;
-using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 
 namespace API.Services
 {
@@ -25,38 +23,49 @@ namespace API.Services
         {
             try
             {
-                if (username == createMessageDto.RecipientUsername.ToLower())
-                    throw new InvalidOperationException("You cannot message yourself!");
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Sender username must be provided.", nameof(username));
 
-                var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
-                var recipient = await _unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
+            if (createMessageDto == null)
+                throw new ArgumentNullException(nameof(createMessageDto), "Message data must be provided.");
 
-                if (sender == null || recipient == null)
-                    throw new KeyNotFoundException("Sender or recipient not found.");
+            if (string.IsNullOrWhiteSpace(createMessageDto.RecipientUsername))
+                throw new ArgumentException("Recipient username must be provided.", nameof(createMessageDto.RecipientUsername));
 
-                if(sender.UserName == null || recipient.UserName == null)
-                    throw new KeyNotFoundException("Sender or recipient not found.");
+            if (string.IsNullOrWhiteSpace(createMessageDto.Content))
+                throw new ArgumentException("Message content must be provided.", nameof(createMessageDto.Content));
 
-                var message = new Message
-                {
-                    Sender = sender,
-                    Recipient = recipient,
-                    SenderUsername = sender.UserName,
-                    RecipientUsername = recipient.UserName,
-                    Content = createMessageDto.Content
-                };
+            if (username.Equals(createMessageDto.RecipientUsername, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("You cannot message yourself!");
 
-                _unitOfWork.MessageRepository.AddMessage(message);
+            var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username.Trim());
+            if (sender == null || string.IsNullOrWhiteSpace(sender.UserName))
+                throw new KeyNotFoundException("Sender not found or sender username is invalid.");
 
-                if (await _unitOfWork.Complete())
-                    return _mapper.Map<MessageDto>(message);
+            var recipient = await _unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername.Trim());
+            if (recipient == null || string.IsNullOrWhiteSpace(recipient.UserName))
+                throw new KeyNotFoundException("Recipient not found or recipient username is invalid.");
 
-                throw new Exception("Failed to save message.");
+            var message = new Message
+            {
+                Sender = sender,
+                Recipient = recipient,
+                SenderUsername = sender.UserName,
+                RecipientUsername = recipient.UserName,
+                Content = createMessageDto.Content.Trim()
+            };
+
+            _unitOfWork.MessageRepository.AddMessage(message);
+
+            if (await _unitOfWork.Complete())
+                return _mapper.Map<MessageDto>(message);
+
+            throw new Exception("Failed to save message.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while creating a message.");
-                throw;
+            _logger.LogError(ex, "Error occurred while creating a message.");
+            throw;
             }
         }
 

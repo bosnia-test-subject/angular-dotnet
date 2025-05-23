@@ -5,9 +5,16 @@ using API.Middleware;
 using API.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext();
+});
 // Add services to the container.
 builder.Services.AddApplicationServices(builder.Configuration);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -34,7 +41,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<PresenceHub>("hubs/presence");
 app.MapHub<MessageHub>("hubs/message");
-
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try

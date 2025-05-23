@@ -1,6 +1,4 @@
-using System;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 
 namespace API.Extensions;
 
