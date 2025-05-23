@@ -1,6 +1,3 @@
-using System;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace API.Extensions;
 
 public static class DateTimeExtensions

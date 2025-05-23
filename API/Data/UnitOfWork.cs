@@ -1,4 +1,3 @@
-using System;
 using API.Interfaces;
 
 namespace API.Data;

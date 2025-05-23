@@ -6,22 +6,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
-
 [Authorize]
 public class MessagesController : BaseApiController
 {
     private readonly IMessageService _messageService;
     private readonly ILogger<MessagesController> _logger;
-
     public MessagesController(IMessageService messageService, ILogger<MessagesController> logger)
     {
         _messageService = messageService;
         _logger = logger;
     }
-
     [HttpPost]
+    [ProducesResponseType(typeof(MessageDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<MessageDto>> CreateMessage(CreateMessageDto createMessageDto)
     {
+        _logger.LogDebug("CreateMessage endpoint called for recipient: {RecipientUsername}", createMessageDto.RecipientUsername);
+
         try
         {
             var username = User.GetUsername();
@@ -44,10 +47,13 @@ public class MessagesController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
-
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<MessageDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser([FromQuery] MessageParams messageParams)
     {
+        _logger.LogDebug("GetMessagesForUser endpoint called with container: {Container}", messageParams.Container);
+
         try
         {
             messageParams.Username = User.GetUsername();
@@ -61,10 +67,13 @@ public class MessagesController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
-
     [HttpGet("thread/{username}")]
+    [ProducesResponseType(typeof(IEnumerable<MessageDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessageThread(string username)
     {
+        _logger.LogDebug("GetMessageThread endpoint called for user: {Username}", username);
+
         try
         {
             var currentUsername = User.GetUsername();
@@ -77,10 +86,15 @@ public class MessagesController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
-
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> DeleteMessage(int id)
     {
+        _logger.LogDebug("DeleteMessage endpoint called for messageId: {MessageId}", id);
+
         try
         {
             var username = User.GetUsername();
