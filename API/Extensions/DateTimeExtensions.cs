@@ -4,7 +4,7 @@ public static class DateTimeExtensions
 {
     public static int CalculateAge(this DateOnly dob) 
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var age = today.Year - dob.Year;
 
