@@ -16,11 +16,6 @@ public class AdminController : ControllerBase
         _adminService = adminService;
         _logger = logger;
     }
-
-    /// <summary>
-    /// Gets all photos that are pending approval.
-    /// </summary>
-    /// <returns>List of unapproved photos.</returns>
     [HttpGet("unapproved-photos")]
     [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -38,12 +33,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Approves a photo by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the photo to approve.</param>
-    /// <returns>Status message.</returns>
     [HttpPost("approve-photo/{id}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -67,12 +56,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Rejects a photo by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the photo to reject.</param>
-    /// <returns>Status message.</returns>
     [HttpDelete("reject-photo/{id}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,11 +79,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Gets all users with their roles.
-    /// </summary>
-    /// <returns>List of users and their roles.</returns>
     [HttpGet("users-with-roles")]
     [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -117,13 +95,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Edits the roles for a specific user.
-    /// </summary>
-    /// <param name="username">The username of the user to edit roles for.</param>
-    /// <param name="roles">Comma-separated list of roles to assign.</param>
-    /// <returns>Status message.</returns>
     [HttpPost("edit-roles/{username}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -28,6 +28,11 @@ public class MessagesController : BaseApiController
         try
         {
             var username = User.GetUsername();
+            if (string.IsNullOrWhiteSpace(username) || username == null)
+            {
+                _logger.LogWarning("Username is missing or invalid.");
+                return NotFound("Username not found.");
+            }
             var message = await _messageService.CreateMessageAsync(username, createMessageDto);
             return Ok(message);
         }
@@ -56,7 +61,13 @@ public class MessagesController : BaseApiController
 
         try
         {
-            messageParams.Username = User.GetUsername();
+            var username = User.GetUsername();
+            if (string.IsNullOrWhiteSpace(username) || username == null)
+            {
+                _logger.LogWarning("Username is missing or invalid.");
+                return NotFound("Username not found.");
+            }
+            messageParams.Username = username;
             var messages = await _messageService.GetMessagesForUserAsync(messageParams);
             Response.AddPaginationHeader((PagedList<MessageDto>)messages);
             return Ok(messages);
@@ -77,6 +88,11 @@ public class MessagesController : BaseApiController
         try
         {
             var currentUsername = User.GetUsername();
+            if (string.IsNullOrWhiteSpace(currentUsername) || currentUsername == null)
+            {
+                _logger.LogWarning("Username is missing or invalid.");
+                return NotFound("Username not found.");
+            }
             var messages = await _messageService.GetMessageThreadAsync(currentUsername, username);
             return Ok(messages);
         }
@@ -98,6 +114,11 @@ public class MessagesController : BaseApiController
         try
         {
             var username = User.GetUsername();
+            if (string.IsNullOrWhiteSpace(username) || username == null)
+            {
+                _logger.LogWarning("Username is missing or invalid.");
+                return NotFound("Username not found.");
+            }
             await _messageService.DeleteMessageAsync(username, id);
             return Ok();
         }
