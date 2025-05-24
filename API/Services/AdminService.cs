@@ -19,7 +19,43 @@ namespace API.Services
             _userManager = userManager;
             _logger = logger;
         }
+        public async Task<IEnumerable<object>> GetTagsAsync()
+        {
+            try
+            {
+                return await _unitOfWork.PhotosRepository.GetTags();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tags.");
+                throw;
+            }
+        }
+        public async Task<object> CreateTagAsync(string tagName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(tagName))
+                {
+                    throw new ArgumentException("Tag name cannot be null or empty.");
+                }
 
+                var tag = new Tag { Name = tagName };
+                _unitOfWork.PhotosRepository.AddTag(tag);
+
+                if (!await _unitOfWork.Complete())
+                {
+                    throw new Exception("Problem creating tag.");
+                }
+
+                return tag;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating tag: {tagName}", tagName);
+                throw;
+            }
+        }
         public async Task<IEnumerable<object>> GetPhotosForApprovalAsync()
         {
             try

@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,54 @@ public class AdminController : ControllerBase
         _adminService = adminService;
         _logger = logger;
     }
+    [HttpPost("create-tag")]
+    [ProducesResponseType(typeof(TagDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TagDto>> CreateTag(CreateTagDto dto)
+    {
+        var tagName = dto?.Name?.Trim();
+        if (string.IsNullOrWhiteSpace(tagName))
+        {
+            _logger.LogWarning("Tag name is null or empty.");
+            return BadRequest(new { message = "Tag name cannot be null or empty." });
+        }
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method CreateTag()");
+            if (dto == null || string.IsNullOrWhiteSpace(tagName))
+            {
+                _logger.LogWarning("Invalid tag data provided.");
+                return BadRequest(new { message = "Invalid tag data." });
+            }
+
+            var tag = await _adminService.CreateTagAsync(tagName);
+            return Ok(tag);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating tag with name: {TagName}", tagName);
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpGet("get-tags")]
+    [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<object>>> GetTags()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetTags()");
+            var tags = await _adminService.GetTagsAsync();
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+
     [HttpGet("unapproved-photos")]
     [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

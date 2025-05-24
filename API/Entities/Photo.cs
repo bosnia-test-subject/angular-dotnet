@@ -9,11 +9,8 @@ public class Photo
     public required string Url { get; set; }
     public bool IsMain { get; set; }
     public string? PublicId { get; set; }
-
-    // Navigation properties
     public int AppUserId { get; set; }
     public AppUser AppUser { get; set; } = null!;
-
-    // PHOTO MANAGEMENT TASK
     public bool isApproved { get; set; } = false;
+    public ICollection<PhotoTag> PhotoTags { get; set; } = new List<PhotoTag>();
 }

@@ -7,13 +7,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
-// PHOTO MANAGEMENT TASK
 public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoRepository
 {
     public async Task<Photo?> GetPhotoById(int id)
     {
         return await context.Photos
         .IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    // public async Task<IEnumerable<TagDto>> GetTags()
+    // {
+    //     var query = context.Photos
+    //         .IgnoreQueryFilters()
+    //         .SelectMany(x => x.PhotoTags.Select(pt => pt.Tag))
+    //         .Distinct()
+    //         .AsQueryable();
+
+    //     return await query.ProjectTo<TagDto>(mapper.ConfigurationProvider).ToListAsync();
+    // }
+    public async Task<IEnumerable<TagDto>> GetTags()
+    {
+        var query = context.Tags.AsQueryable();
+        return await query.ProjectTo<TagDto>(mapper.ConfigurationProvider).ToListAsync();
+    }
+    public void AddTag(Tag tag)
+    {
+        context.Tags.Add(tag);
     }
 
     public async Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos()
