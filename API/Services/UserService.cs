@@ -26,7 +26,7 @@ namespace API.Services
             try
             {
                 var users = await _unitOfWork.UserRepository.GetMembersAsync(userParams);
-                if (users == null || !users.Any())
+                if (users == null)
                 {
                     _logger.LogWarning("No users found with user parameters: {userParams}", userParams);
                     throw new KeyNotFoundException("No users found.");

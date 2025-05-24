@@ -1,88 +1,101 @@
 <!-- eslint-disable @angular-eslint/template/interactive-supports-focus -->
 <!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
 <nav
-  class="navbar border-bottom border-2 border-info navbar-expand-md py-2 navbar-dark fixed-top bg-primary">
-  <div class="container">
-    <a class="navbar-brand" routerLinkActive="active" routerLink="/"
-      >DateMePlease.org</a
-    >
+  class="navbar border-bottom border-info border-2 navbar-expand-md navbar-dark bg-primary fixed-top py-2 shadow-sm">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand fw-bold" routerLink="/" routerLinkActive="active">
+      DateMePlease.org
+    </a>
 
-    <ul class="navbar-nav mr-auto">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        @if (accountService.currentUser()) {
+          <li class="nav-item">
+            <a routerLink="/members" routerLinkActive="active" class="nav-link"
+              >Matches</a
+            >
+          </li>
+          <li class="nav-item">
+            <a routerLink="/lists" routerLinkActive="active" class="nav-link"
+              >Lists</a
+            >
+          </li>
+          <li class="nav-item">
+            <a routerLink="/messages" routerLinkActive="active" class="nav-link"
+              >Messages</a
+            >
+          </li>
+          <li *appHasRole="['Admin', 'Moderator']" class="nav-item">
+            <a routerLink="/admin" routerLinkActive="active" class="nav-link"
+              >Admin</a
+            >
+          </li>
+        }
+        <li class="nav-item">
+          <a routerLink="/errors" routerLinkActive="active" class="nav-link"
+            >Errors</a
+          >
+        </li>
+      </ul>
+
       @if (accountService.currentUser()) {
-        <li class="nav-item active">
-          <a routerLink="/members" routerLinkActive="active" class="nav-link"
-            >Matches</a
-          >
-        </li>
-        <li class="nav-item active">
-          <a routerLink="/lists" routerLinkActive="active" class="nav-link"
-            >Lists</a
-          >
-        </li>
-        <li class="nav-item active">
-          <a routerLink="/messages" routerLinkActive="active" class="nav-link"
-            >Messages</a
-          >
-        </li>
-        <li *appHasRole="['Admin', 'Moderator']" class="nav-item active">
-          <a routerLink="/admin" routerLinkActive="active" class="nav-link"
-            >Admin</a
-          >
-        </li>
-      }
-      <li class="nav-item active">
-        <a routerLink="/errors" routerLinkActive="active" class="nav-link"
-          >Errors</a
-        >
-      </li>
-    </ul>
-
-    @if (accountService.currentUser()) {
-      <div dropdown class="dropdown">
-        <img
-          class="me-2"
-          src="{{
-            accountService.currentUser()?.photoUrl || './assets/user.png'
-          }}"
-          alt="user main image" />
-        <a
-          dropdownToggle
-          class="dropdown-toggle text-light text-decoration-none"
-          >Welcome {{ accountService.currentUser()?.knownAs }}</a
-        >
-        <div *dropdownMenu class="dropdown-menu">
-          <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" (click)="logout()">Log Out</a>
+        <div dropdown class="dropdown d-flex align-items-center">
+          <img
+            src="{{
+              accountService.currentUser()?.photoUrl || './assets/user.png'
+            }}"
+            alt="user main image"
+            class="rounded-circle me-2 circle-img" />
+          <a
+            dropdownToggle
+            class="dropdown-toggle cursor-pointer text-light text-decoration-none fw-semibold">
+            Welcome {{ accountService.currentUser()?.knownAs }}
+          </a>
+          <div *dropdownMenu class="dropdown-menu dropdown-menu-end shadow">
+            <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" (click)="logout()">Log Out</a>
+          </div>
         </div>
-      </div>
-    }
+      }
 
-    @if (!accountService.currentUser()) {
-      <form
-        #loginForm="ngForm"
-        (ngSubmit)="login()"
-        autocomplete="off"
-        class="form-inline d-flex mt-1 mt-md-0">
-        <input
-          name="username"
-          [(ngModel)]="model.username"
-          class="form-control ms-2"
-          type="text"
-          placeholder="Username" />
-        <input
-          name="password"
-          [(ngModel)]="model.password"
-          class="form-control ms-2 mr-sm-2"
-          type="password"
-          placeholder="Password" />
-        <app-button-wrapper
-          name="login"
-          text="Login"
-          classStyle="btn btn-success my-2 ms-2 my-sm-0"
-          type="submit">
-        </app-button-wrapper>
-      </form>
-    }
+      @if (!accountService.currentUser()) {
+        <form
+          #loginForm="ngForm"
+          (ngSubmit)="login()"
+          autocomplete="off"
+          class="d-flex align-items-center gap-2 mt-2 mt-md-0 ms-md-3">
+          <input
+            name="username"
+            [(ngModel)]="model.username"
+            class="form-control form-control-sm"
+            type="text"
+            placeholder="Username" />
+          <input
+            name="password"
+            [(ngModel)]="model.password"
+            class="form-control form-control-sm"
+            type="password"
+            placeholder="Password" />
+          <app-button-wrapper
+            name="login"
+            text="Login"
+            classStyle="btn btn-success btn-sm"
+            type="submit">
+          </app-button-wrapper>
+        </form>
+      }
+    </div>
   </div>
 </nav>

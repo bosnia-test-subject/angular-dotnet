@@ -2,7 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { AdminService } from '../../_services/admin.service';
 import { Photo } from '../../_models/photo';
 import { ToastrService } from 'ngx-toastr';
-import { ButtonWrapperComponent } from "../../_forms/button-wrapper/button-wrapper.component";
+import { ButtonWrapperComponent } from '../../_forms/button-wrapper/button-wrapper.component';
+import { Tag } from '../../_models/tag';
 
 @Component({
   selector: 'app-photo-management',
@@ -15,11 +16,30 @@ export class PhotoManagementComponent implements OnInit {
   private adminService = inject(AdminService);
   toastr = inject(ToastrService);
   photos: Photo[] = [];
+  tags: Tag[] = [];
 
   ngOnInit(): void {
     this.getApprovalPhotos();
+    this.getTags();
   }
-  // task 19
+  addTag(tag: Tag) {
+    return this.adminService.addTag(tag).subscribe({
+      next: () => {
+        this.toastr.success('Tag succesfully added');
+        this.getApprovalPhotos();
+      },
+      error: error => console.log(error),
+    });
+  }
+  getTags() {
+    return this.adminService.getTags().subscribe({
+      next: response => {
+        this.tags = response;
+      },
+      error: error =>
+        this.toastr.error('Something unexpected happened: ' + error),
+    });
+  }
   approvePhoto(id: number) {
     return this.adminService.approvePhoto(id).subscribe({
       next: () => {
@@ -30,7 +50,6 @@ export class PhotoManagementComponent implements OnInit {
       error: error => console.log(error),
     });
   }
-  // task 19
   rejectPhoto(id: number) {
     return this.adminService.rejectPhoto(id).subscribe({
       next: () => {
@@ -40,7 +59,6 @@ export class PhotoManagementComponent implements OnInit {
       error: error => console.log(error),
     });
   }
-  // task 19
   getApprovalPhotos() {
     return this.adminService.getPhotosForApproval().subscribe({
       next: response => {

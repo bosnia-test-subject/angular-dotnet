@@ -1,24 +1,64 @@
-<div class="d-flex">
+<div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
   @if (photos !== null) {
     @for (photo of photos; track photo.id) {
-      <div class="card align-items-center text-center m-2">
-        <h5>{{ photo.username }}</h5>
+      <div class="card text-center p-3 shadow-sm" style="width: 250px">
+        <h5 class="text-primary mb-2">{{ photo.username }}</h5>
         <img
-          class="photo-property"
+          class="img-fluid rounded photo-property border"
           src="{{ photo.url }}"
-          alt="{{ photo.username }}" />
-        <div class="d-flex mb-2 mt-4 shadow">
-          <app-button-wrapper (click)="approvePhoto(photo.id)" text="Approve">
-          </app-button-wrapper>
+          alt="{{ photo.username }}"
+          style="max-height: 200px; object-fit: cover" />
+        <div class="d-flex justify-content-around mt-3">
           <app-button-wrapper
-            classStyle="btn btn-danger"
+            (click)="approvePhoto(photo.id)"
+            text="Approve"
+            classStyle="btn btn-success btn-sm"></app-button-wrapper>
+          <app-button-wrapper
             (click)="rejectPhoto(photo.id)"
-            text="Reject">
-          </app-button-wrapper>
+            text="Reject"
+            classStyle="btn btn-danger btn-sm"></app-button-wrapper>
         </div>
       </div>
     }
   } @else {
-    <p>There are no unapproved photos for display. Please try again later.</p>
+    <p class="text-muted text-center w-100 mt-4">
+      There are no unapproved photos for display. Please try again later.
+    </p>
   }
+</div>
+
+<div class="container my-5">
+  <h2 class="text-center mb-3">Photo Tags List</h2>
+  <p class="text-center text-muted">
+    You can browse available photo tags here and also create new tags.
+  </p>
+  <div class="d-flex flex-wrap justify-content-center gap-2">
+    @for (tag of tags; track tag.id) {
+      <div class="badge bg-secondary p-2 px-3 fs-6 shadow-sm">
+        {{ tag.name }}
+      </div>
+    }
+  </div>
+</div>
+
+<div class="container my-5">
+  <h2 class="text-center mb-3">Create New Photo Tag</h2>
+  <form>
+    <div class="mb-3">
+      <label for="tagName" class="form-label">Tag Name</label>
+      <input
+        type="text"
+        id="tagName"
+        class="form-control"
+        formControlName="name"
+        placeholder="Enter tag name"
+        required />
+    </div>
+    <div class="text-center">
+      <app-button-wrapper
+        type="submit"
+        text="Create Tag"
+        classStyle="btn btn-primary"></app-button-wrapper>
+    </div>
+  </form>
 </div>
