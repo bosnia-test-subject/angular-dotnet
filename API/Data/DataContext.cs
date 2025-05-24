@@ -47,7 +47,7 @@ IdentityUserToken<int>>(options)
             .HasOne(s => s.TargetUser)
             .WithMany(l => l.LikedByUsers)
             .HasForeignKey(s => s.TargetUserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Message>()
             .HasOne(x => x.Recipient)
             .WithMany(x => x.MessagesReceived)
