@@ -1,8 +1,10 @@
+import { Tag } from './tag';
+
 export interface Photo {
   id: number;
   url: string;
   isMain: boolean;
-  // Task 17.
   isApproved: boolean;
   username: string;
+  PhotoTags?: Tag[];
 }

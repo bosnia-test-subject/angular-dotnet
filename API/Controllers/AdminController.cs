@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using API.Data;
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -154,7 +156,7 @@ public class AdminController : ControllerBase
         try
         {
             await _adminService.EditRolesAsync(username, roles);
-            return Ok (new { message = "Roles successfully updated." });
+            return Ok(new { message = "Roles successfully updated." });
         }
         catch (ArgumentException ex)
         {
@@ -175,6 +177,54 @@ public class AdminController : ControllerBase
         {
             _logger.LogError(ex, "Unexpected error occurred while editing roles for user: {Username}", username);
             return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        }
+    }
+    [HttpGet("photo-stats")]
+    [ProducesResponseType(typeof(IEnumerable<PhotoStatsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<PhotoStatsDto>>> GetPhotoApprovalStats()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetPhotoApprovalStats()");
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
+            {
+                _logger.LogWarning("Current user ID is null.");
+                return BadRequest(new { message = "Current user ID is required." });
+            }
+
+            var stats = await _adminService.GetPhotoApprovalStatsAsync(int.Parse(currentUserId));
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching photo approval stats.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpGet("users-without-main-photo")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<string>>> GetUsersWithoutMainPhoto()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetUsersWithoutMainPhoto()");
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
+            {
+                _logger.LogWarning("Current user ID is null.");
+                return BadRequest(new { message = "Current user ID is required." });
+            }
+
+            var users = await _adminService.GetUsersWithoutMainPhotoAsync(int.Parse(currentUserId));
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching users without main photo.");
+            return StatusCode(500, new { message = "Internal server error" });
         }
     }
 }

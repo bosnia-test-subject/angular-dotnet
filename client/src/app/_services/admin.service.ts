@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from '../_models/user';
 import { Photo } from '../_models/photo';
 import { Tag } from '../_models/tag';
+import { PhotoStats } from '../_models/photoStats';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +18,14 @@ export class AdminService {
   }
   addTag(tag: Tag) {
     return this.http.post(this.baseUrl + 'admin/create-tag', tag);
+  }
+  getPhotoApprovalStats() {
+    return this.http.get<PhotoStats[]>(this.baseUrl + 'admin/photo-stats');
+  }
+  getUsersWithNoMainPhoto() {
+    return this.http.get<string[]>(
+      this.baseUrl + 'admin/users-without-main-photo'
+    );
   }
   getPhotosForApproval() {
     return this.http.get<Photo[]>(this.baseUrl + 'admin/unapproved-photos');

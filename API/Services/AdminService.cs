@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using API.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -145,40 +146,74 @@ namespace API.Services
             }
         }
 
-    public async Task EditRolesAsync(string username, string roles)
-    {
-        try
+        public async Task EditRolesAsync(string username, string roles)
         {
-            if (string.IsNullOrEmpty(roles))
-                throw new ArgumentException("You must select at least one role.");
-
-            var selectedRoles = roles.Split(",").ToArray();
-
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-                throw new KeyNotFoundException("User not found.");
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            var addToRolesResult = await _userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles));
-            if (!addToRolesResult.Succeeded)
+            try
             {
-                var errors = string.Join(", ", addToRolesResult.Errors.Select(e => e.Description));
-                throw new InvalidOperationException($"Failed to add roles: {errors}");
+                if (string.IsNullOrEmpty(roles))
+                    throw new ArgumentException("You must select at least one role.");
+
+                var selectedRoles = roles.Split(",").ToArray();
+
+                var user = await _userManager.FindByNameAsync(username);
+                if (user == null)
+                    throw new KeyNotFoundException("User not found.");
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+
+                var addToRolesResult = await _userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles));
+                if (!addToRolesResult.Succeeded)
+                {
+                    var errors = string.Join(", ", addToRolesResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to add roles: {errors}");
+                }
+
+                var removeFromRolesResult = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles));
+                if (!removeFromRolesResult.Succeeded)
+                {
+                    var errors = string.Join(", ", removeFromRolesResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to remove roles: {errors}");
+                }
             }
-
-            var removeFromRolesResult = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles));
-            if (!removeFromRolesResult.Succeeded)
+            catch (Exception ex)
             {
-                var errors = string.Join(", ", removeFromRolesResult.Errors.Select(e => e.Description));
-                throw new InvalidOperationException($"Failed to remove roles: {errors}");
+                _logger.LogError(ex, "Error occurred while editing roles for user: {username}", username);
+                throw;
             }
         }
-        catch (Exception ex)
+        public async Task<List<PhotoStatsDto>> GetPhotoApprovalStatsAsync(int currentUserId)
         {
-            _logger.LogError(ex, "Error occurred while editing roles for user: {username}", username);
-            throw;
+            try
+            {
+                var stats = await _unitOfWork.PhotosRepository.GetPhotoApprovalStatsAsync(currentUserId);
+                if (stats == null || !stats.Any())
+                {
+                    throw new KeyNotFoundException("No photo approval stats found for the current user.");
+                }
+                return stats.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching photo approval stats for user ID: {currentUserId}", currentUserId);
+                throw;
+            }
         }
-    }
+        public async Task<List<string>> GetUsersWithoutMainPhotoAsync(int currentUserId)
+        {
+            try
+            {
+                var usersWithoutMainPhoto = await _unitOfWork.PhotosRepository.GetUsersWithoutMainPhotoAsync(currentUserId);
+                if (usersWithoutMainPhoto == null || !usersWithoutMainPhoto.Any())
+                {
+                    throw new KeyNotFoundException("No users without main photo found.");
+                }
+                return usersWithoutMainPhoto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching users without main photo for user ID: {currentUserId}", currentUserId);
+                throw;
+            }
+        }
     }
 }

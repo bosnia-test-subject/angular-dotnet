@@ -19,6 +19,7 @@ export class PhotoEditorComponent implements OnInit {
   private memberService = inject(MembersService);
   private toastr = inject(ToastrService);
   member = input.required<Member>();
+  userPhotos: Photo[] = [];
   uploader?: FileUploader;
   hasBaseDropZoneOver = false;
   baseUrl = environment.apiUrl;
@@ -29,6 +30,27 @@ export class PhotoEditorComponent implements OnInit {
   }
   fileOverBase(e: any) {
     this.hasBaseDropZoneOver = e;
+  }
+
+  getUserPhotos() {
+    this.memberService.getMember(this.member().userName).subscribe({
+      next: member => {
+        this.userPhotos = member.photos;
+      },
+    });
+  }
+
+  getTags(photo: Photo) {
+    this.memberService.getTagsForPhoto(photo.id).subscribe({
+      next: tags => {
+        if (tags.length > 0) {
+          photo.PhotoTags = tags;
+          console.log(tags);
+        } else {
+          photo.PhotoTags = [];
+        }
+      },
+    });
   }
 
   deletePhoto(photo: Photo) {
