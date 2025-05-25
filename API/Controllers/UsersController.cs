@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
+
 [Authorize]
 public class UsersController : BaseApiController
 {
@@ -177,6 +178,56 @@ public class UsersController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting photo for user: {Username}", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    [HttpPost("assign-tags/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> AssignTags(int photoId, [FromBody] List<string> tags)
+    {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
+        try
+        {
+            await _userService.AssignTagsByNameAsync(username, photoId, tags);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {PhotoId} not found for user: {Username}", photoId, username);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while assigning tags to photo for user: {Username}", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    [HttpGet("tags/{photoId}")]
+    [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<TagDto>>> GetTagsByPhotoId(int photoId)
+    {
+        try
+        {
+            var tags = await _userService.GetTagsAsync(photoId);
+            if (tags == null || !tags.Any())
+            {
+                _logger.LogWarning("No tags found for photo with ID {PhotoId}.", photoId);
+                return NotFound($"No tags found for photo with ID {photoId}.");
+            }
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags for photo with ID {PhotoId}.", photoId);
             return StatusCode(500, "Internal server error");
         }
     }

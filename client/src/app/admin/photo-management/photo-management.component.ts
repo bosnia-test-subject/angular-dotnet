@@ -4,11 +4,12 @@ import { Photo } from '../../_models/photo';
 import { ToastrService } from 'ngx-toastr';
 import { ButtonWrapperComponent } from '../../_forms/button-wrapper/button-wrapper.component';
 import { Tag } from '../../_models/tag';
+import { FormsModule, NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-photo-management',
   standalone: true,
-  imports: [ButtonWrapperComponent],
+  imports: [ButtonWrapperComponent, FormsModule],
   templateUrl: './photo-management.component.html',
   styleUrl: './photo-management.component.css',
 })
@@ -17,18 +18,23 @@ export class PhotoManagementComponent implements OnInit {
   toastr = inject(ToastrService);
   photos: Photo[] = [];
   tags: Tag[] = [];
-
+  newTag: Tag = {} as Tag;
   ngOnInit(): void {
     this.getApprovalPhotos();
     this.getTags();
   }
-  addTag(tag: Tag) {
-    return this.adminService.addTag(tag).subscribe({
+  createTag(form: NgForm) {
+    if (form.invalid) return;
+    this.adminService.addTag(this.newTag).subscribe({
       next: () => {
-        this.toastr.success('Tag succesfully added');
-        this.getApprovalPhotos();
+        this.newTag.name = '';
+        this.toastr.success('Tag successfully created');
+        this.getTags();
+        form.resetForm();
       },
-      error: error => console.log(error),
+      error: err => {
+        this.toastr.error('Something unexpected happened: ' + err);
+      },
     });
   }
   getTags() {

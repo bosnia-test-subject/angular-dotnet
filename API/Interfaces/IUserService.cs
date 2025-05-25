@@ -5,6 +5,8 @@ namespace API.Interfaces
 {
     public interface IUserService
     {
+        Task<List<TagDto>> GetTagsAsync(int photoId);
+        Task AssignTagsByNameAsync(string username, int photoId, List<string> tagNames);
         Task<PagedList<MemberDto>> GetUsersAsync(UserParams userParams);
         Task<MemberDto> GetUserAsync(string username);
         Task UpdateUserAsync(string username, MemberUpdateDto memberUpdateDto);

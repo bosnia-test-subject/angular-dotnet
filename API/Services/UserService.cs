@@ -26,7 +26,7 @@ namespace API.Services
             try
             {
                 var users = await _unitOfWork.UserRepository.GetMembersAsync(userParams);
-                if (users == null)
+                if (users == null || !users.Any())
                 {
                     _logger.LogWarning("No users found with user parameters: {userParams}", userParams);
                     throw new KeyNotFoundException("No users found.");
@@ -170,6 +170,67 @@ namespace API.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting photo for user: {username}", username);
+                throw;
+            }
+        }
+        public async Task AssignTagsByNameAsync(string username, int photoId, List<string> tagNames)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            if (tagNames == null || tagNames.Count == 0)
+                throw new ArgumentException("At least one tag must be provided.");
+
+            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+            if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+            // 2. Normalize incoming names
+            var normalizedNames = tagNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Select(n => n.Trim().ToLowerInvariant())
+                .Distinct()
+                .ToList();
+
+            // 3. Fetch matching tags from DB
+            var existingTags = await _unitOfWork.TagsRepository.GetTagsByNamesAsync(normalizedNames);
+
+            if (existingTags.Count != normalizedNames.Count)
+            {
+                var existingNames = existingTags.Select(t => t.Name.ToLowerInvariant()).ToHashSet();
+                var missingNames = normalizedNames.Except(existingNames);
+                throw new Exception($"Some tags do not exist in the database: {string.Join(", ", missingNames)}");
+            }
+
+            photo.PhotoTags.Clear();
+
+            foreach (var tag in existingTags)
+            {
+                photo.PhotoTags.Add(new PhotoTag
+                {
+                    PhotoId = photo.Id,
+                    TagId = tag.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = username
+                });
+            }
+
+            if (!await _unitOfWork.Complete())
+                throw new Exception("Failed to assign tags.");
+        }
+
+        public async Task<List<TagDto>> GetTagsAsync(int photoId)
+        {
+            try
+            {
+                var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+                if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+                var tags = photo.PhotoTags.Select(pt => pt.Tag).ToList();
+                return _mapper.Map<List<TagDto>>(tags);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tags for photo {photoId}", photoId);
                 throw;
             }
         }

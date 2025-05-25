@@ -12,7 +12,6 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 {
     public async Task<MemberDto?> GetMemberAsync(string username)
     {
-        // PHOTO MANAGEMENT TASK 7
         var query = context.Users
         .Where(x => x.UserName == username).ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsQueryable();
 

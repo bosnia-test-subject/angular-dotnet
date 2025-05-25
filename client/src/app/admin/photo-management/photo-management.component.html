@@ -43,14 +43,15 @@
 
 <div class="container my-5">
   <h2 class="text-center mb-3">Create New Photo Tag</h2>
-  <form>
+  <form #tagForm="ngForm" (ngSubmit)="createTag(tagForm)">
     <div class="mb-3">
       <label for="tagName" class="form-label">Tag Name</label>
       <input
         type="text"
         id="tagName"
         class="form-control"
-        formControlName="name"
+        name="name"
+        [(ngModel)]="newTag.name"
         placeholder="Enter tag name"
         required />
     </div>

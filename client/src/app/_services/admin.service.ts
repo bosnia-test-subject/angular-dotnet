@@ -16,13 +16,7 @@ export class AdminService {
     return this.http.get<Tag[]>(this.baseUrl + 'admin/get-tags');
   }
   addTag(tag: Tag) {
-    return this.http.post(
-      this.baseUrl + 'admin/add-tag',
-      { tag },
-      {
-        responseType: 'text',
-      }
-    );
+    return this.http.post(this.baseUrl + 'admin/create-tag', tag);
   }
   getPhotosForApproval() {
     return this.http.get<Photo[]>(this.baseUrl + 'admin/unapproved-photos');

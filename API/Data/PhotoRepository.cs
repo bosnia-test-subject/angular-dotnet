@@ -14,17 +14,6 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         return await context.Photos
         .IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
     }
-
-    // public async Task<IEnumerable<TagDto>> GetTags()
-    // {
-    //     var query = context.Photos
-    //         .IgnoreQueryFilters()
-    //         .SelectMany(x => x.PhotoTags.Select(pt => pt.Tag))
-    //         .Distinct()
-    //         .AsQueryable();
-
-    //     return await query.ProjectTo<TagDto>(mapper.ConfigurationProvider).ToListAsync();
-    // }
     public async Task<IEnumerable<TagDto>> GetTags()
     {
         var query = context.Tags.AsQueryable();
@@ -43,5 +32,13 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
     public void RemovePhoto(Photo photo)
     {
         context.Photos.Remove(photo);
+    }
+    public async Task<Photo?> GetPhotoWithTagsByIdAsync(int id)
+    {
+        return await context.Photos
+            .Include(p => p.PhotoTags)
+            .ThenInclude(pt => pt.Tag)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 }
