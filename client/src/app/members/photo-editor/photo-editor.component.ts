@@ -84,6 +84,30 @@ export class PhotoEditorComponent implements OnInit {
     }
   }
 
+  removeTagFromPhoto(photo: Photo, tag: string) {
+    const updatedTags = photo.tags?.filter(t => t !== tag) || [];
+    this.memberService.addTagToPhoto(photo.id, updatedTags).subscribe({
+      next: () => {
+        this.toastr.success('Tag removed successfully');
+        photo.tags = updatedTags;
+        const memberPhotoIndex = this.member().photos.findIndex(
+          p => p.id === photo.id
+        );
+        if (memberPhotoIndex > -1) {
+          this.member().photos[memberPhotoIndex].tags = [...updatedTags];
+        }
+        this.memberChange.emit({
+          ...this.member(),
+          photos: [...this.member().photos],
+        });
+      },
+      error: err => {
+        this.toastr.error('Failed to remove tag');
+        console.error(err);
+      },
+    });
+  }
+
   submitTagsForPhoto(photo: Photo) {
     this.memberService
       .addTagToPhoto(photo.id, this.selectedTagNames)

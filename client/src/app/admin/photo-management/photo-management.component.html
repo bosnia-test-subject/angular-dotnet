@@ -5,9 +5,20 @@
   Approve or reject photos as you like.
 </p>
 <div class="line mx-auto justify-content-center d-flex"></div>
+
+<div class="d-flex mt-3 justify-content-center mb-3">
+  <select
+    class="form-select w-auto"
+    [(ngModel)]="selectedTag"
+    (change)="filterPhotosByTag()">
+    <option value="">All Tags</option>
+    <option *ngFor="let tag of tags" [value]="tag.name">{{ tag.name }}</option>
+  </select>
+</div>
+
 <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
-  @if (photos !== null) {
-    @for (photo of photos; track photo.id) {
+  @if (filteredPhotos !== null) {
+    @for (photo of filteredPhotos; track photo.id) {
       <div class="card div-style text-center p-3 align-items-center shadow-sm">
         <h5 class="text-primary mb-2">{{ photo.username }}</h5>
         <img

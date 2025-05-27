@@ -5,11 +5,12 @@ import { ToastrService } from 'ngx-toastr';
 import { ButtonWrapperComponent } from '../../_forms/button-wrapper/button-wrapper.component';
 import { Tag } from '../../_models/tag';
 import { FormsModule, NgForm } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-photo-management',
   standalone: true,
-  imports: [ButtonWrapperComponent, FormsModule],
+  imports: [ButtonWrapperComponent, FormsModule, CommonModule],
   templateUrl: './photo-management.component.html',
   styleUrl: './photo-management.component.css',
 })
@@ -19,9 +20,12 @@ export class PhotoManagementComponent implements OnInit {
   photos: Photo[] = [];
   tags: Tag[] = [];
   newTag: Tag = {} as Tag;
+  selectedTag: string = '';
+  filteredPhotos: any[] = [];
   ngOnInit(): void {
     this.getApprovalPhotos();
     this.getTags();
+    this.filteredPhotos = this.photos;
   }
   createTag(form: NgForm) {
     if (form.invalid) return;
@@ -33,7 +37,11 @@ export class PhotoManagementComponent implements OnInit {
         form.resetForm();
       },
       error: err => {
-        this.toastr.error('Something unexpected happened: ' + err);
+        if (err.status === 400) {
+          this.toastr.error("You can't create duplicates!");
+        } else {
+          this.toastr.error('Something unexpected happened: ' + err);
+        }
       },
     });
   }
@@ -45,6 +53,15 @@ export class PhotoManagementComponent implements OnInit {
       error: error =>
         this.toastr.error('Something unexpected happened: ' + error),
     });
+  }
+  filterPhotosByTag() {
+    if (!this.selectedTag) {
+      this.filteredPhotos = this.photos;
+    } else {
+      this.filteredPhotos = this.photos.filter(
+        photo => photo.tags && photo.tags.includes(this.selectedTag)
+      );
+    }
   }
   approvePhoto(id: number) {
     return this.adminService.approvePhoto(id).subscribe({
@@ -69,6 +86,7 @@ export class PhotoManagementComponent implements OnInit {
     return this.adminService.getPhotosForApproval().subscribe({
       next: response => {
         this.photos = response;
+        this.filterPhotosByTag();
       },
       error: error =>
         this.toastr.error('Something unexpected happened: ' + error),
