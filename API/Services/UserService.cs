@@ -204,24 +204,20 @@ namespace API.Services
             var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
             if (photo == null) throw new KeyNotFoundException("Photo not found.");
 
-            // Remove duplicates from input list (case-insensitive)
             var distinctTagNames = tagNames
                 .Where(n => !string.IsNullOrWhiteSpace(n))
                 .Select(n => n.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // Get Tag entities for those names
             var tags = await _unitOfWork.TagsRepository.GetTagsByNamesAsync(distinctTagNames);
             if (tags == null || !tags.Any())
                 throw new KeyNotFoundException("No tags found with the provided names.");
 
-            // Get tag names already assigned to this photo (case-insensitive)
             var assignedTagNames = photo.PhotoTags
                 .Select(pt => pt.Tag.Name)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            // Only add tags that are not already assigned
             foreach (var tag in tags)
             {
                 if (!assignedTagNames.Contains(tag.Name))
