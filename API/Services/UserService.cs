@@ -155,12 +155,12 @@ namespace API.Services
                 var photo = await _unitOfWork.PhotosRepository.GetPhotoById(photoId);
                 if (photo == null || photo.IsMain) throw new InvalidOperationException("Cannot delete this photo.");
 
-                if(photo.IsMain)
+                if (photo.IsMain)
                 {
                     _logger.LogWarning("Cannot delete main photo for user: {username}", username);
                     throw new InvalidOperationException("Cannot delete main photo.");
                 }
-                if(username != user.UserName)
+                if (username != user.UserName)
                 {
                     _logger.LogWarning("User {username} attempted to delete photo of another user.", username);
                     throw new UnauthorizedAccessException("You cannot delete photos of other users.");
@@ -201,38 +201,41 @@ namespace API.Services
             var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
             if (user == null) throw new KeyNotFoundException("User not found.");
 
-            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId); 
+            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
             if (photo == null) throw new KeyNotFoundException("Photo not found.");
 
-            var tags = await _unitOfWork.TagsRepository.GetTagsByNamesAsync(tagNames);
+            // Remove duplicates from input list (case-insensitive)
+            var distinctTagNames = tagNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Get Tag entities for those names
+            var tags = await _unitOfWork.TagsRepository.GetTagsByNamesAsync(distinctTagNames);
             if (tags == null || !tags.Any())
                 throw new KeyNotFoundException("No tags found with the provided names.");
 
-            var existingTags = await _unitOfWork.TagsRepository.GetAllTagsAsync();
-            var existingTagNames = existingTags.Select(t => t.Name).ToList();
+            // Get tag names already assigned to this photo (case-insensitive)
+            var assignedTagNames = photo.PhotoTags
+                .Select(pt => pt.Tag.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            var duplicateTagName = tagNames.FirstOrDefault(name => existingTagNames.
-            Any(existingName => string.
-            Equals(existingName, name, StringComparison.OrdinalIgnoreCase)));
-
-            if (duplicateTagName != null)
-                throw new InvalidOperationException($"Cannot assign duplicate tag: {duplicateTagName}");
-
-            var existingTagIds = photo.PhotoTags.Select(pt => pt.TagId).ToHashSet();
-            var duplicateTag = tags.FirstOrDefault(tag => existingTagIds.Contains(tag.Id));
-            if (duplicateTag != null)
-                throw new InvalidOperationException($"Cannot assign duplicate tag: {duplicateTag.Name}");
-
+            // Only add tags that are not already assigned
             foreach (var tag in tags)
             {
-                if (!existingTagIds.Contains(tag.Id))
+                if (!assignedTagNames.Contains(tag.Name))
                 {
-                    photo.PhotoTags.Add(new PhotoTag { Photo = photo, Tag = tag, CreatedBy = username, CreatedAt = DateTime.UtcNow });
+                    photo.PhotoTags.Add(new PhotoTag
+                    {
+                        Photo = photo,
+                        Tag = tag,
+                        CreatedBy = username,
+                        CreatedAt = DateTime.UtcNow
+                    });
                 }
             }
-
-            if (!await _unitOfWork.Complete())
-                throw new Exception("Problem assigning tags to photo.");
+            await _unitOfWork.Complete();
         }
         public async Task<List<TagDto>> GetTagsAsync(int photoId)
         {
@@ -259,6 +262,18 @@ namespace API.Services
             if (photos == null)
                 throw new KeyNotFoundException("No photos found for this user.");
             return _mapper.Map<List<PhotoDto>>(photos);
+        }
+        public async Task<IEnumerable<object>> GetTagsAsync()
+        {
+            try
+            {
+                return await _unitOfWork.PhotosRepository.GetTagsAsStrings();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tags.");
+                throw;
+            }
         }
     }
 }

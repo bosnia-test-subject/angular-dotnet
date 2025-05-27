@@ -6,6 +6,7 @@ namespace API.Interfaces;
 public interface IPhotoRepository
 {
     Task<IEnumerable<TagDto>> GetTags();
+    Task<IEnumerable<string>> GetTagsAsStrings();
     void AddTag(Tag tag);
     Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos();
     Task<Photo?> GetPhotoById(int id);

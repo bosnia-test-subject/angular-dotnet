@@ -86,6 +86,17 @@ export class MembersService {
     return this.http.get<Photo[]>(this.baseUrl + 'users/photos-tags');
   }
   getAllTags() {
-    return this.http.get<Tag[]>(this.baseUrl + 'users/tags');
+    return this.http.get<string[]>(this.baseUrl + 'users/tags');
+  }
+  addTagToPhoto(photoId: number, tags: string[]) {
+    return this.http.post(
+      `${this.baseUrl}users/assign-tags/${photoId}`,
+      JSON.stringify(tags),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 }

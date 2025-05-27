@@ -1,48 +1,72 @@
 <div class="row">
-  @for (photo of userPhotos; track photo.id) {
-    <div class="col-3 card m-2 p-4">
-      <div class="position-relative align-items-center d-inline-block">
-        <img
-          [ngClass]="{ 'bg-white bg-opacity-25': !photo.isApproved }"
-          [src]="photo.url"
-          alt="photo of user"
-          class="img-thumbnail mb-1" />
-        <div
-          *ngIf="!photo.isApproved"
-          class="position-absolute top-50 start-50 translate-middle text-white bg-danger bg-opacity-75 px-2 py-1 rounded">
-          Awaiting approval
-        </div>
-      </div>
-
-      <div class="text-center">
-        <button
-          class="btn btn-sm me-1"
-          [disabled]="photo.isMain"
-          (click)="setMainPhoto(photo)"
-          [ngClass]="
-            photo.isMain ? 'btn-success active' : 'btn-outline-success'
-          ">
-          Main
-        </button>
-        <button
-          [disabled]="photo.isMain"
-          (click)="deletePhoto(photo)"
-          class="btn btn-danger btn-sm">
-          <i class="fa fa-trash"></i>
-        </button>
-      </div>
-      <div class="d-flex mt-2 flex-wrap gap-1">
-        @for (tag of photo.tags; track tag) {
-          <div class="badge bg-secondary text-white">
-            {{ tag }}
-          </div>
-        }
-      </div>
-      <div class="mt-2">
-        <button class="btn btn-primary">Edit photo tags</button>
+  <div
+    class="col-3 card m-2 p-4"
+    *ngFor="let photo of userPhotos; trackBy: trackPhoto">
+    <div class="position-relative align-items-center d-inline-block">
+      <img
+        [ngClass]="{ 'bg-white bg-opacity-25': !photo.isApproved }"
+        [src]="photo.url"
+        alt="photo of user"
+        class="img-thumbnail mb-1" />
+      <div
+        *ngIf="!photo.isApproved"
+        class="position-absolute top-50 start-50 translate-middle text-white bg-danger bg-opacity-75 px-2 py-1 rounded">
+        Awaiting approval
       </div>
     </div>
-  }
+
+    <div class="text-center">
+      <button
+        class="btn btn-sm me-1"
+        [disabled]="photo.isMain || !photo.isApproved"
+        (click)="setMainPhoto(photo)"
+        [ngClass]="photo.isMain ? 'btn-success active' : 'btn-outline-success'">
+        Main
+      </button>
+      <button
+        [disabled]="photo.isMain || !photo.isApproved"
+        (click)="deletePhoto(photo)"
+        class="btn btn-danger btn-sm">
+        <i class="fa fa-trash"></i>
+      </button>
+    </div>
+    <div class="d-flex mt-2 flex-wrap gap-1">
+      <div class="badge bg-secondary text-white" *ngFor="let tag of photo.tags">
+        {{ tag }}
+      </div>
+    </div>
+    <div class="mt-2">
+      <button class="btn btn-primary" (click)="openTagEditor(photo)">
+        {{
+          editingPhotoId === photo.id ? 'Close tag editor' : 'Edit photo tags'
+        }}
+      </button>
+
+      <div *ngIf="editingPhotoId === photo.id" class="mt-2">
+        <div *ngIf="availableTags.length; else loadingTags">
+          <div class="form-check" *ngFor="let tag of availableTags">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [id]="tag + '-' + photo.id"
+              [checked]="selectedTagNames.includes(tag)"
+              (change)="toggleTagSelection(tag)" />
+            <label class="form-check-label" [for]="tag + '-' + photo.id">{{
+              tag
+            }}</label>
+          </div>
+          <button
+            class="btn btn-success btn-sm mt-2"
+            (click)="submitTagsForPhoto(photo)">
+            Save Tags
+          </button>
+        </div>
+        <ng-template #loadingTags>
+          <span>Loading tags...</span>
+        </ng-template>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-------NG FILE UPLOAD--------->

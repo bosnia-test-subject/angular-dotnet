@@ -198,6 +198,11 @@ public class UsersController : BaseApiController
             await _userService.AssignTagsByNameAsync(username, photoId, tags);
             return Ok();
         }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation while assigning tags to photo with ID {PhotoId} for user: {Username}", photoId, username);
+            return BadRequest(ex.Message);
+        }
         catch (KeyNotFoundException ex)
         {
             _logger.LogWarning(ex, "Photo with ID {PhotoId} not found for user: {Username}", photoId, username);
@@ -237,4 +242,23 @@ public class UsersController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
+    [HttpGet("tags")]
+    [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<string>>> GetTags()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetTags()");
+            var tags = await _userService.GetTagsAsync();
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    
 }
