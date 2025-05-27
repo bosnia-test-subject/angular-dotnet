@@ -1,13 +1,12 @@
 <div class="row">
-  @for (photo of member().photos; track photo.id) {
-    <div class="col-2 card m-2 p-4">
-      <div class="position-relative d-inline-block">
+  @for (photo of userPhotos; track photo.id) {
+    <div class="col-3 card m-2 p-4">
+      <div class="position-relative align-items-center d-inline-block">
         <img
           [ngClass]="{ 'bg-white bg-opacity-25': !photo.isApproved }"
           [src]="photo.url"
           alt="photo of user"
           class="img-thumbnail mb-1" />
-
         <div
           *ngIf="!photo.isApproved"
           class="position-absolute top-50 start-50 translate-middle text-white bg-danger bg-opacity-75 px-2 py-1 rounded">
@@ -32,12 +31,17 @@
           <i class="fa fa-trash"></i>
         </button>
       </div>
+      <div class="d-flex mt-2 flex-wrap gap-1">
+        @for (tag of photo.tags; track tag) {
+          <div class="badge bg-secondary text-white">
+            {{ tag }}
+          </div>
+        }
+      </div>
+      <div class="mt-2">
+        <button class="btn btn-primary">Edit photo tags</button>
+      </div>
     </div>
-  }
-  @for (photo of userPhotos; track photo.id) {
-    @for (tag of photo.PhotoTags; track tag.id) {
-      <div>{{ tag.name }}</div>
-    }
   }
 </div>
 

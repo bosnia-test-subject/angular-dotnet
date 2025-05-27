@@ -41,6 +41,11 @@ public class AdminController : ControllerBase
             }
 
             var tag = await _adminService.CreateTagAsync(tagName);
+            if (tag == null || tag.ToString() == "duplicate")
+            {
+                _logger.LogWarning("Tag with name {TagName} already exists.", tagName);
+                return BadRequest(new { message = "Tag with that name already exists!" });
+            }
             return Ok(tag);
         }
         catch (Exception ex)

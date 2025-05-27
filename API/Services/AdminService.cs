@@ -42,6 +42,13 @@ namespace API.Services
                 }
 
                 var tag = new Tag { Name = tagName };
+
+                var existingTags = await _unitOfWork.TagsRepository.GetAllTagsAsync();
+                if (existingTags.Any(t => t.Name.Equals(tag.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return "duplicate";
+                }
+
                 _unitOfWork.PhotosRepository.AddTag(tag);
 
                 if (!await _unitOfWork.Complete())

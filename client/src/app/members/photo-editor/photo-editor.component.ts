@@ -7,6 +7,9 @@ import { environment } from '../../../environments/environment';
 import { Photo } from '../../_models/photo';
 import { MembersService } from '../../_services/members.service';
 import { ToastrService } from 'ngx-toastr';
+import { Tag } from '../../_models/tag';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { RolesModalComponent } from '../../modals/roles-modal/roles-modal.component';
 @Component({
   selector: 'app-photo-editor',
   standalone: true,
@@ -24,31 +27,30 @@ export class PhotoEditorComponent implements OnInit {
   hasBaseDropZoneOver = false;
   baseUrl = environment.apiUrl;
   memberChange = output<Member>();
+  private modalService = inject(BsModalService);
+  tags: Tag[] = [];
+  bsModalRef: BsModalRef<RolesModalComponent> =
+    new BsModalRef<RolesModalComponent>();
 
   ngOnInit(): void {
     this.initializeUploader();
+    this.getUserPhotos();
   }
   fileOverBase(e: any) {
     this.hasBaseDropZoneOver = e;
   }
 
+  // getUserPhotos() {
+  //   this.memberService.getMember(this.member().userName).subscribe({
+  //     next: member => {
+  //       this.userPhotos = member.photos;
+  //     },
+  //   });
+  // }
   getUserPhotos() {
-    this.memberService.getMember(this.member().userName).subscribe({
-      next: member => {
-        this.userPhotos = member.photos;
-      },
-    });
-  }
-
-  getTags(photo: Photo) {
-    this.memberService.getTagsForPhoto(photo.id).subscribe({
-      next: tags => {
-        if (tags.length > 0) {
-          photo.PhotoTags = tags;
-          console.log(tags);
-        } else {
-          photo.PhotoTags = [];
-        }
+    this.memberService.getPhotosWithTags().subscribe({
+      next: photos => {
+        this.userPhotos = photos;
       },
     });
   }
@@ -61,6 +63,7 @@ export class PhotoEditorComponent implements OnInit {
           x => x.id !== photo.id
         );
         this.memberChange.emit(updatedMember);
+        this.getUserPhotos();
       },
     });
   }
@@ -84,7 +87,8 @@ export class PhotoEditorComponent implements OnInit {
               p.isMain = true;
             }
           });
-          this.memberChange.emit(updatedMember);
+          // this.memberChange.emit(updatedMember);
+          this.getUserPhotos();
         },
       });
     } else {
@@ -129,4 +133,40 @@ export class PhotoEditorComponent implements OnInit {
       }
     };
   }
+
+  // openRolesModal(user: User) {
+  //   const initialState: ModalOptions = {
+  //     class: 'modal-lg',
+  //     initialState: {
+  //       title: 'User roles',
+  //       username: user.username,
+  //       selectedRoles: [...user.roles],
+  //       availableRoles: ['Admin', 'Moderator', 'Member'],
+  //       users: this.users,
+  //       rolesUpdated: false,
+  //     },
+  //   };
+  //   this.bsModalRef = this.modalService.show(RolesModalComponent, initialState);
+  //   this.bsModalRef.onHide?.subscribe({
+  //     next: () => {
+  //       if (this.bsModalRef.content && this.bsModalRef.content.rolesUpdated) {
+  //         const selectedRoles = this.bsModalRef.content.selectedRoles;
+  //         this.adminService
+  //           .updateUserRoles(user.username, selectedRoles)
+  //           .subscribe({
+  //             next: roles => {
+  //               user.roles = roles;
+  //               this.getUsersWithRoles();
+  //             },
+  //           });
+  //       }
+  //     },
+  //   });
+  // }
+
+  // getUsersWithRoles() {
+  //   this.adminService.getUserWithRoles().subscribe({
+  //     next: users => (this.users = users),
+  //   });
+  // }
 }

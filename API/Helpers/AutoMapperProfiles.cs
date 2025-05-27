@@ -13,7 +13,9 @@ public class AutoMapperProfiles : Profile
         .ForMember(d => d.Age, o => o.MapFrom(s => s.DateOfBirth.CalculateAge()))
         .ForMember(d => d.PhotoUrl, o => o.MapFrom(s => s.Photos.
         FirstOrDefault(x => x.IsMain)!.Url));
-        CreateMap<Photo, PhotoDto>();
+        CreateMap<Photo, PhotoDto>()
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PhotoTags
+            .Select(pt => pt.Tag!.Name).ToList()));
         CreateMap<MemberUpdateDto, AppUser>();
         CreateMap<RegisterDto, AppUser>();
         CreateMap<string, DateOnly>().ConvertUsing(s => DateOnly.Parse(s));
@@ -26,8 +28,9 @@ public class AutoMapperProfiles : Profile
         CreateMap<DateTime?, DateTime?>().ConvertUsing(d => d.HasValue ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : null);
 
         CreateMap<Photo, PhotoForApprovalDto>()
-            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.AppUser.UserName));
-
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.AppUser.UserName))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.PhotoTags
+            .Select(pt => pt.Tag!.Name).ToList()));
         CreateMap<Tag, TagDto>();
     }
 }

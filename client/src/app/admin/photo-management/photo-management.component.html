@@ -8,13 +8,12 @@
 <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
   @if (photos !== null) {
     @for (photo of photos; track photo.id) {
-      <div class="card text-center p-3 shadow-sm" style="width: 250px">
+      <div class="card div-style text-center p-3 align-items-center shadow-sm">
         <h5 class="text-primary mb-2">{{ photo.username }}</h5>
         <img
-          class="img-fluid rounded photo-property border"
+          class="img-fluid shadow-lg img-style rounded photo-property border"
           src="{{ photo.url }}"
-          alt="{{ photo.username }}"
-          style="max-height: 200px; object-fit: cover" />
+          alt="{{ photo.username }}" />
         <div class="d-flex justify-content-around mt-3">
           <app-button-wrapper
             (click)="approvePhoto(photo.id)"
@@ -24,6 +23,13 @@
             (click)="rejectPhoto(photo.id)"
             text="Reject"
             classStyle="btn btn-danger btn-sm"></app-button-wrapper>
+        </div>
+        <div class="mt-3 d-flex flex-wrap justify-content-center gap-2">
+          @for (tag of photo.tags; track tag) {
+            <span class="badge bg-secondary p-2 px-3 fs-6 shadow-sm">
+              {{ tag }}
+            </span>
+          }
         </div>
       </div>
     }

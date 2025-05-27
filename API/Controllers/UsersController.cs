@@ -209,25 +209,31 @@ public class UsersController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
-    [HttpGet("tags/{photoId}")]
+    [HttpGet("photos-tags")]
     [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<List<TagDto>>> GetTagsByPhotoId(int photoId)
+    public async Task<ActionResult<List<PhotoDto>>> GetPhotoTagsByUsername()
     {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
         try
         {
-            var tags = await _userService.GetTagsAsync(photoId);
-            if (tags == null || !tags.Any())
+            var photos = await _userService.GetPhotoWithTagsByUsernameAsync(username);
+            if (photos == null)
             {
-                _logger.LogWarning("No tags found for photo with ID {PhotoId}.", photoId);
-                return NotFound($"No tags found for photo with ID {photoId}.");
+                _logger.LogWarning("No tags found for user with username {username}.", username);
+                return NotFound($"No tags found for username {username}.");
             }
-            return Ok(tags);
+            return Ok(photos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while fetching tags for photo with ID {PhotoId}.", photoId);
+            _logger.LogError(ex, "Error occurred while fetching tags for username {username}.", username);
             return StatusCode(500, "Internal server error");
         }
     }

@@ -82,4 +82,10 @@ export class MembersService {
   getTagsForPhoto(photoId: number) {
     return this.http.get<Tag[]>(this.baseUrl + 'users/tags/' + photoId);
   }
+  getPhotosWithTags() {
+    return this.http.get<Photo[]>(this.baseUrl + 'users/photos-tags');
+  }
+  getAllTags() {
+    return this.http.get<Tag[]>(this.baseUrl + 'users/tags');
+  }
 }

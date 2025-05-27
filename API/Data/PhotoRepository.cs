@@ -43,6 +43,15 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(p => p.Id == id);
     }
+    public async Task<List<Photo>> GetPhotosByUsernameAsync(string username)
+    {
+        return await context.Photos
+            .Where(p => p.AppUser.UserName == username)
+            .Include(p => p.PhotoTags)
+            .ThenInclude(pt => pt.Tag)
+            .IgnoreQueryFilters()
+            .ToListAsync();
+    }
     public async Task<List<PhotoStatsDto>> GetPhotoApprovalStatsAsync(int currentUserId)
     {
         var result = new List<PhotoStatsDto>();
