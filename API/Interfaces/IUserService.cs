@@ -7,6 +7,7 @@ namespace API.Interfaces
     {
         Task<List<TagDto>> GetTagsAsync(int photoId);
         Task<IEnumerable<object>> GetTagsAsync();
+        Task RemoveTagFromPhotoAsync(string username, int photoId, string tagName);
         Task AssignTagsByNameAsync(string username, int photoId, List<string> tagNames);
         Task<PagedList<MemberDto>> GetUsersAsync(UserParams userParams);
         Task<MemberDto> GetUserAsync(string username);

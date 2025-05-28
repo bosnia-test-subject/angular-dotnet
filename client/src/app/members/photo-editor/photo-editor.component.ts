@@ -36,13 +36,26 @@ export class PhotoEditorComponent implements OnInit {
   editingPhotoId: number | null = null;
   selectedTagNames: string[] = [];
   availableTags: string[] = [];
+  selectedTag: string = '';
+  filteredPhotos: Photo[] = [];
 
   ngOnInit(): void {
     this.initializeUploader();
+    this.loadAvailableTags();
     this.getUserPhotos();
   }
   fileOverBase(e: any) {
     this.hasBaseDropZoneOver = e;
+  }
+
+  filterPhotosByTag() {
+    if (!this.selectedTag) {
+      this.filteredPhotos = this.userPhotos;
+    } else {
+      this.filteredPhotos = this.userPhotos.filter(
+        photo => photo.tags && photo.tags.includes(this.selectedTag)
+      );
+    }
   }
 
   loadAvailableTags() {
@@ -85,16 +98,15 @@ export class PhotoEditorComponent implements OnInit {
   }
 
   removeTagFromPhoto(photo: Photo, tag: string) {
-    const updatedTags = photo.tags?.filter(t => t !== tag) || [];
-    this.memberService.addTagToPhoto(photo.id, updatedTags).subscribe({
+    this.memberService.removeTagFromPhoto(photo.id, tag).subscribe({
       next: () => {
         this.toastr.success('Tag removed successfully');
-        photo.tags = updatedTags;
+        photo.tags = photo.tags?.filter(t => t !== tag) || [];
         const memberPhotoIndex = this.member().photos.findIndex(
           p => p.id === photo.id
         );
         if (memberPhotoIndex > -1) {
-          this.member().photos[memberPhotoIndex].tags = [...updatedTags];
+          this.member().photos[memberPhotoIndex].tags = [...photo.tags];
         }
         this.memberChange.emit({
           ...this.member(),
@@ -152,18 +164,11 @@ export class PhotoEditorComponent implements OnInit {
       },
     });
   }
-
-  // getUserPhotos() {
-  //   this.memberService.getMember(this.member().userName).subscribe({
-  //     next: member => {
-  //       this.userPhotos = member.photos;
-  //     },
-  //   });
-  // }
   getUserPhotos() {
     this.memberService.getPhotosWithTags().subscribe({
       next: photos => {
         this.userPhotos = photos;
+        this.filterPhotosByTag();
       },
     });
   }

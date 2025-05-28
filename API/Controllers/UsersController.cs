@@ -260,5 +260,32 @@ public class UsersController : BaseApiController
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-    
+    [HttpDelete("remove-tag/{photoId:int}/{tagName}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RemoveTagFromPhoto(int photoId, string tagName)
+    {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
+        try
+        {
+            await _userService.RemoveTagFromPhotoAsync(username, photoId, tagName);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {PhotoId} or tag {TagName} not found for user: {Username}", photoId, tagName, username);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while removing tag from photo for user: {Username}", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
 }

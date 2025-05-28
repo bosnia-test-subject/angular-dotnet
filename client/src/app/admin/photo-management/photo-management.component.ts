@@ -54,6 +54,22 @@ export class PhotoManagementComponent implements OnInit {
         this.toastr.error('Something unexpected happened: ' + error),
     });
   }
+  removeTag(tagName: string) {
+    return this.adminService.removeTagByName(tagName).subscribe({
+      next: () => {
+        this.toastr.success('Tag successfully removed');
+        this.getTags();
+        this.getApprovalPhotos();
+      },
+      error: error => {
+        if (error.status === 400) {
+          this.toastr.error("You can't remove a tag that is in use!");
+        } else {
+          this.toastr.error('Something unexpected happened: ' + error);
+        }
+      },
+    });
+  }
   filterPhotosByTag() {
     if (!this.selectedTag) {
       this.filteredPhotos = this.photos;

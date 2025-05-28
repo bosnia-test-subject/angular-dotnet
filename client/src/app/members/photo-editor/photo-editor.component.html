@@ -1,7 +1,17 @@
+<div class="d-flex justify-content-center mb-3">
+  <select
+    class="form-select w-auto"
+    [(ngModel)]="selectedTag"
+    (change)="filterPhotosByTag()">
+    <option value="">All Tags</option>
+    <option *ngFor="let tag of availableTags" [value]="tag">{{ tag }}</option>
+  </select>
+</div>
+
 <div class="row">
   <div
     class="col-3 card m-2 p-4"
-    *ngFor="let photo of userPhotos; trackBy: trackPhoto">
+    *ngFor="let photo of filteredPhotos; trackBy: trackPhoto">
     <div class="position-relative align-items-center d-inline-block">
       <img
         [ngClass]="{ 'bg-white bg-opacity-25': !photo.isApproved }"

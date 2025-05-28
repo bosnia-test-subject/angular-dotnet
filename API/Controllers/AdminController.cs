@@ -232,4 +232,33 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
+    [HttpDelete("remove-tag/{name}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RemoveTagByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            _logger.LogWarning("Tag name is null or empty.");
+            return BadRequest(new { message = "Tag name cannot be null or empty." });
+        }
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method RemoveTagByName()");
+            await _adminService.RemoveTagByNameAsync(name);
+            return Ok(new { message = "Tag successfully removed." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Tag not found with name: {TagName}", name);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while removing tag with name: {TagName}", name);
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
 }

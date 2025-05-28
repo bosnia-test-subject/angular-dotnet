@@ -99,4 +99,9 @@ export class MembersService {
       }
     );
   }
+  removeTagFromPhoto(photoId: number, tagName: string) {
+    return this.http.delete(
+      `${this.baseUrl}users/remove-tag/${photoId}/${tagName}`
+    );
+  }
 }

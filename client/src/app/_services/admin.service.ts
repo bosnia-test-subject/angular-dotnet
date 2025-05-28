@@ -19,6 +19,11 @@ export class AdminService {
   addTag(tag: Tag) {
     return this.http.post(this.baseUrl + 'admin/create-tag', tag);
   }
+  removeTagByName(tagName: string) {
+    return this.http.delete(this.baseUrl + `admin/remove-tag/${tagName}`, {
+      responseType: 'text',
+    });
+  }
   getPhotoApprovalStats() {
     return this.http.get<PhotoStats[]>(this.baseUrl + 'admin/photo-stats');
   }

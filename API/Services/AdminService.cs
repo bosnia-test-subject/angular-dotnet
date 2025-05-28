@@ -222,5 +222,23 @@ namespace API.Services
                 throw;
             }
         }
+        public async Task RemoveTagByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Tag name is required.");
+            try
+            {
+                await _unitOfWork.TagsRepository.RemoveTagByName(name);
+                if (!await _unitOfWork.Complete())
+                {
+                    throw new Exception("Failed to remove tag.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while removing tag: {name}", name);
+                throw;
+            }
+        }
     }
 }

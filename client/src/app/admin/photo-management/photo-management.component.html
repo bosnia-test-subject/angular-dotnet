@@ -58,8 +58,16 @@
   </p>
   <div class="d-flex flex-wrap justify-content-center gap-2">
     @for (tag of tags; track tag.id) {
-      <div class="badge bg-secondary p-2 px-3 fs-6 shadow-sm">
+      <div
+        class="badge bg-secondary p-2 px-3 fs-6 shadow-sm d-flex align-items-center">
         {{ tag.name }}
+        <button
+          type="button"
+          class="btn btn-link btn-sm ms-2 p-0"
+          (click)="removeTag(tag.name)"
+          title="Remove tag">
+          <i class="fa fa-trash text-white"></i>
+        </button>
       </div>
     }
   </div>

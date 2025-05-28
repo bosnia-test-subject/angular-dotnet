@@ -215,7 +215,7 @@ namespace API.Services
                 throw new KeyNotFoundException("No tags found with the provided names.");
 
             var assignedTagNames = photo.PhotoTags
-                .Select(pt => pt.Tag.Name)
+                .Select(pt => pt.Tag!.Name)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             foreach (var tag in tags)
@@ -269,6 +269,30 @@ namespace API.Services
             {
                 _logger.LogError(ex, "Error occurred while fetching tags.");
                 throw;
+            }
+        }
+        public async Task RemoveTagFromPhotoAsync(string username, int photoId, string tagName)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            if (string.IsNullOrWhiteSpace(tagName))
+                throw new ArgumentException("Tag name is required.");
+
+            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+            if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+            var tag = await _unitOfWork.TagsRepository.GetTagByNameAsync(tagName);
+            if (tag == null) throw new KeyNotFoundException("Tag not found.");
+
+            var photoTag = photo.PhotoTags.FirstOrDefault(pt => pt.TagId == tag.Id);
+            if (photoTag != null)
+            {
+                photo.PhotoTags.Remove(photoTag);
+                await _unitOfWork.Complete();
             }
         }
     }
