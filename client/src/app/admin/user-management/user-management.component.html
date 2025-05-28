@@ -1,24 +1,37 @@
-<div class="row">
-  <table class="table">
-    <thead>
-      <tr>
-        <th class="th-style">Username</th>
-        <th class="th-style">Active roles</th>
-        <th class="th-style">Role edit</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (user of users; track user.username) {
-        <tr>
-          <td>{{ user.username }}</td>
-          <td>{{ user.roles }}</td>
-          <td>
-            <button (click)="openRolesModal(user)" class="btn btn-info">
-              Edit roles
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+<h1 class="text-center mt-5 mb-3 text-primary fw-bold">User Management</h1>
+
+<p class="text-center text-info mb-2">Change user roles.</p>
+<div class="line mx-auto mb-4"></div>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10">
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-primary text-uppercase text-center">
+          <tr>
+            <th class="th-style">Username</th>
+            <th class="th-style">Active Roles</th>
+            <th class="th-style">Role Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.username) {
+            <tr>
+              <td class="fw-semibold text-center">{{ user.username }}</td>
+              <td class="text-center text-success fw-medium">
+                {{ user.roles }}
+              </td>
+              <td class="text-center">
+                <button
+                  (click)="openRolesModal(user)"
+                  class="btn btn-sm btn-outline-info px-3">
+                  <i class="bi bi-pencil-square me-1"></i> Edit Roles
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

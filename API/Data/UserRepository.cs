@@ -12,7 +12,6 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 {
     public async Task<MemberDto?> GetMemberAsync(string username)
     {
-        // PHOTO MANAGEMENT TASK 7
         var query = context.Users
         .Where(x => x.UserName == username).ProjectTo<MemberDto>(mapper.ConfigurationProvider).AsQueryable();
 
@@ -26,12 +25,12 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
 
         query = query.Where(x => x.UserName != userParams.CurrentUsername);
 
-        if(userParams.Gender != null) 
+        if (userParams.Gender != null)
         {
             query = query.Where(x => x.Gender == userParams.Gender);
         }
 
-        var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge-1));
+        var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
         var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
 
         query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);

@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -15,8 +16,9 @@ IdentityUserToken<int>>(options)
     public DbSet<Message> Messages { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Connection> Connections { get; set; }
-    // PHOTO MANAGEMENT TASK
     public DbSet<Photo> Photos { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<PhotoTag> PhotoTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,7 +37,7 @@ IdentityUserToken<int>>(options)
             .IsRequired();
 
         builder.Entity<UserLike>().
-            HasKey(k => new {k.SourceUserId, k.TargetUserId});
+            HasKey(k => new { k.SourceUserId, k.TargetUserId });
 
         builder.Entity<UserLike>()
             .HasOne(s => s.SourceUser)
@@ -47,7 +49,7 @@ IdentityUserToken<int>>(options)
             .HasOne(s => s.TargetUser)
             .WithMany(l => l.LikedByUsers)
             .HasForeignKey(s => s.TargetUserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         builder.Entity<Message>()
             .HasOne(x => x.Recipient)
             .WithMany(x => x.MessagesReceived)
@@ -56,7 +58,22 @@ IdentityUserToken<int>>(options)
             .HasOne(x => x.Sender)
             .WithMany(x => x.MessagesSent)
             .OnDelete(DeleteBehavior.Restrict);
-        // PHOTO MANAGEMENT TASK
         builder.Entity<Photo>().HasQueryFilter(p => p.isApproved);
+        builder.Entity<PhotoTag>()
+    .HasKey(pt => new { pt.PhotoId, pt.TagId });
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Photo)
+            .WithMany(p => p.PhotoTags)
+            .HasForeignKey(pt => pt.PhotoId);
+
+        builder.Entity<PhotoTag>()
+            .HasOne(pt => pt.Tag)
+            .WithMany(t => t.PhotoTags)
+            .HasForeignKey(pt => pt.TagId);
+
+        builder.Entity<Tag>()
+            .HasIndex(t => t.Name)
+            .IsUnique();
     }
 }

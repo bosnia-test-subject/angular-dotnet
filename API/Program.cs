@@ -51,6 +51,8 @@ try
     await context.Database.MigrateAsync();
     await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]");
     await Seed.SeedUsers(userManager, roleManager);
+    await Seed.SeedStoredProceduresAsync(context);
+    await Seed.SeedTagsAsync(context);
 }
 catch (Exception ex)
 {

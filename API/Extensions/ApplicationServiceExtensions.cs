@@ -15,7 +15,7 @@ public static class ApplicationServiceExtensions
         services.AddControllers();
         services.AddDbContext<DataContext>(opt =>
         {
-            opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
+            opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
         });
 
         services.AddCors();
@@ -30,6 +30,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ILikesRepository, LikesRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<ITagsRepository, TagsRepository>();
         // PHOTO MANAGEMENT TASK
         services.AddScoped<IPhotoRepository, PhotoRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

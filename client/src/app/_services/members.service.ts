@@ -8,6 +8,7 @@ import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
 import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
+import { Tag } from '../_models/tag';
 
 @Injectable({
   providedIn: 'root',
@@ -57,8 +58,6 @@ export class MembersService {
   }
 
   getMember(username: string) {
-    /*     const member = this.members().find(x => x.userName === username);
-    if(member != undefined) return of(member); */
     const member: Member = [...this.memberCache.values()]
       .reduce((arr, elem) => arr.concat(elem.body), [])
       .find((m: Member) => m.userName === username);
@@ -67,48 +66,42 @@ export class MembersService {
     return this.http.get<Member>(this.baseUrl + 'users/' + username);
   }
   updateMember(member: Member) {
-    return this.http
-      .put(this.baseUrl + 'users', member)
-      .pipe
-      /*       tap(() => 
-        {
-          this.members.update(members => members.map(m => m.userName === member.userName 
-            ? member : m))
-        }) */
-      ();
+    return this.http.put(this.baseUrl + 'users', member).pipe();
   }
 
   setMainPhoto(photo: Photo) {
     return this.http
       .put(this.baseUrl + 'users/set-main-photo/' + photo.id, {})
-      .pipe
-      /*       tap(() => {
-        this.members.update(members => members.map( m => 
-          {
-            if (m.photos.includes(photo)) 
-              {
-                m.photoUrl = photo.url
-              }
-              return m;
-          }))
-      }) */
-      ();
+      .pipe();
   }
   deletePhoto(photo: Photo) {
     return this.http
       .delete(this.baseUrl + 'users/delete-photo/' + photo.id)
-      .pipe
-      /*       tap(() => 
+      .pipe();
+  }
+  getTagsForPhoto(photoId: number) {
+    return this.http.get<Tag[]>(this.baseUrl + 'users/tags/' + photoId);
+  }
+  getPhotosWithTags() {
+    return this.http.get<Photo[]>(this.baseUrl + 'users/photos-tags');
+  }
+  getAllTags() {
+    return this.http.get<string[]>(this.baseUrl + 'users/tags');
+  }
+  addTagToPhoto(photoId: number, tags: string[]) {
+    return this.http.post(
+      `${this.baseUrl}users/assign-tags/${photoId}`,
+      JSON.stringify(tags),
       {
-        this.members.update(members => members.map(m => 
-          {
-            if(m.photos.includes(photo)) 
-              {
-                m.photos = m.photos.filter(x => x.id !== photo.id)
-              }
-              return m;
-          }))
-      }) */
-      ();
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+  removeTagFromPhoto(photoId: number, tagName: string) {
+    return this.http.delete(
+      `${this.baseUrl}users/remove-tag/${photoId}/${tagName}`
+    );
   }
 }

@@ -1,0 +1,38 @@
+<h1 class="text-center mt-5 mx-4 text-primary fw-bold">
+  User Photo Statistics
+</h1>
+<i class="bi bi-award fs-1 text-primary"></i>
+<h3 class="text-secondary justify-content-center d-flex mx-auto fw-bold">
+  Users with no main photos
+</h3>
+<div class="line mx-auto justify-content-center d-flex"></div>
+<div class="my-5">
+  @for (user of usersWithNoMainPhoto; track user) {
+    <p
+      class="badge d-flex w-25 mx-auto justify-content-center bg-secondary p-2 my-2 px-3 fs-6 shadow-sm">
+      {{ user }}
+    </p>
+  }
+</div>
+<div class="line mx-auto justify-content-center d-flex"></div>
+<div class="container">
+  <div class="row justify-content-center">
+    @for (stat of photoStats; track stat.username) {
+      <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="card shadow-sm h-100 border-0">
+          <div class="card-body">
+            <h5 class="card-title text-primary">{{ stat.username }}</h5>
+            <p class="mb-2">
+              <strong>✅ Approved Photos: </strong>
+              <span class="text-success">{{ stat.approvedPhotos }}</span>
+            </p>
+            <p>
+              <strong>🚫 Unapproved Photos: </strong>
+              <span class="text-danger">{{ stat.unapprovedPhotos }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

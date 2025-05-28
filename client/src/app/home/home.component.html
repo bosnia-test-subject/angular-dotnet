@@ -1,7 +1,7 @@
 <div class="container">
   <div class="home-style">
     @if (!registerMode) {
-      <h1>Find your match</h1>
+      <h1 class="fw-bold">Find your match</h1>
       <p class="lead">
         Come on in to view your matches... all you need to do is sign up!
       </p>
@@ -14,7 +14,7 @@
     } @else {
       <div class="container">
         <div class="row justify-content-center">
-          <div class="col-8">
+          <div class="col-8 shadow">
             <app-register
               (cancelRegister)="cancelRegisterMode($event)"></app-register>
           </div>

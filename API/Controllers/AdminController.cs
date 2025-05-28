@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using API.Data;
+using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +19,59 @@ public class AdminController : ControllerBase
         _adminService = adminService;
         _logger = logger;
     }
+    [HttpPost("create-tag")]
+    [ProducesResponseType(typeof(TagDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TagDto>> CreateTag(CreateTagDto dto)
+    {
+        var tagName = dto?.Name?.Trim();
+        if (string.IsNullOrWhiteSpace(tagName))
+        {
+            _logger.LogWarning("Tag name is null or empty.");
+            return BadRequest(new { message = "Tag name cannot be null or empty." });
+        }
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method CreateTag()");
+            if (dto == null || string.IsNullOrWhiteSpace(tagName))
+            {
+                _logger.LogWarning("Invalid tag data provided.");
+                return BadRequest(new { message = "Invalid tag data." });
+            }
 
-    /// <summary>
-    /// Gets all photos that are pending approval.
-    /// </summary>
-    /// <returns>List of unapproved photos.</returns>
+            var tag = await _adminService.CreateTagAsync(tagName);
+            if (tag == null || tag.ToString() == "duplicate")
+            {
+                _logger.LogWarning("Tag with name {TagName} already exists.", tagName);
+                return BadRequest(new { message = "Tag with that name already exists!" });
+            }
+            return Ok(tag);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating tag with name: {TagName}", tagName);
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpGet("get-tags")]
+    [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<object>>> GetTags()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetTags()");
+            var tags = await _adminService.GetTagsAsync();
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+
     [HttpGet("unapproved-photos")]
     [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -38,12 +89,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Approves a photo by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the photo to approve.</param>
-    /// <returns>Status message.</returns>
     [HttpPost("approve-photo/{id}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -67,12 +112,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Rejects a photo by its ID.
-    /// </summary>
-    /// <param name="id">The ID of the photo to reject.</param>
-    /// <returns>Status message.</returns>
     [HttpDelete("reject-photo/{id}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,11 +135,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Gets all users with their roles.
-    /// </summary>
-    /// <returns>List of users and their roles.</returns>
     [HttpGet("users-with-roles")]
     [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -117,13 +151,6 @@ public class AdminController : ControllerBase
             return StatusCode(500, new { message = "Internal server error" });
         }
     }
-
-    /// <summary>
-    /// Edits the roles for a specific user.
-    /// </summary>
-    /// <param name="username">The username of the user to edit roles for.</param>
-    /// <param name="roles">Comma-separated list of roles to assign.</param>
-    /// <returns>Status message.</returns>
     [HttpPost("edit-roles/{username}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -134,7 +161,7 @@ public class AdminController : ControllerBase
         try
         {
             await _adminService.EditRolesAsync(username, roles);
-            return Ok (new { message = "Roles successfully updated." });
+            return Ok(new { message = "Roles successfully updated." });
         }
         catch (ArgumentException ex)
         {
@@ -155,6 +182,83 @@ public class AdminController : ControllerBase
         {
             _logger.LogError(ex, "Unexpected error occurred while editing roles for user: {Username}", username);
             return StatusCode(500, new { message = "An unexpected error occurred. Please try again later." });
+        }
+    }
+    [HttpGet("photo-stats")]
+    [ProducesResponseType(typeof(IEnumerable<PhotoStatsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<PhotoStatsDto>>> GetPhotoApprovalStats()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetPhotoApprovalStats()");
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
+            {
+                _logger.LogWarning("Current user ID is null.");
+                return BadRequest(new { message = "Current user ID is required." });
+            }
+
+            var stats = await _adminService.GetPhotoApprovalStatsAsync(int.Parse(currentUserId));
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching photo approval stats.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpGet("users-without-main-photo")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<string>>> GetUsersWithoutMainPhoto()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetUsersWithoutMainPhoto()");
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
+            {
+                _logger.LogWarning("Current user ID is null.");
+                return BadRequest(new { message = "Current user ID is required." });
+            }
+
+            var users = await _adminService.GetUsersWithoutMainPhotoAsync(int.Parse(currentUserId));
+            return Ok(users);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching users without main photo.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpDelete("remove-tag/{name}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RemoveTagByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            _logger.LogWarning("Tag name is null or empty.");
+            return BadRequest(new { message = "Tag name cannot be null or empty." });
+        }
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method RemoveTagByName()");
+            await _adminService.RemoveTagByNameAsync(name);
+            return Ok(new { message = "Tag successfully removed." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Tag not found with name: {TagName}", name);
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while removing tag with name: {TagName}", name);
+            return StatusCode(500, new { message = "Internal server error" });
         }
     }
 }

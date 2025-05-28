@@ -2,3 +2,14 @@
   height: 150px;
   width: 150px;
 }
+.line {
+    width: 50%;
+    height: 1px;
+    background-color: #bebebe;
+}
+.div-style{
+  width: 250px
+}
+.img-style {
+  max-height: 200px; object-fit: cover;
+}
