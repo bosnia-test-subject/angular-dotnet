@@ -1,8 +1,15 @@
+using API.DTOs;
+
 namespace API.Interfaces
 {
     public interface IAdminService
     {
-        Task<IEnumerable<object>> GetPhotosForApprovalAsync(); 
+        Task<object> CreateTagAsync(string tagName);
+        Task<IEnumerable<object>> GetTagsAsync();
+        Task RemoveTagByNameAsync(string name);
+        Task<IEnumerable<object>> GetPhotosForApprovalAsync();
+        Task<List<PhotoStatsDto>> GetPhotoApprovalStatsAsync(int currentUserId);
+        Task<List<string>> GetUsersWithoutMainPhotoAsync(int currentUserId);
         Task RejectPhotoAsync(int id);
         Task ApprovePhotoAsync(int id);
         Task<IEnumerable<object>> GetUsersWithRolesAsync();

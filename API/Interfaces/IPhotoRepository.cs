@@ -5,8 +5,14 @@ namespace API.Interfaces;
 
 public interface IPhotoRepository
 {
-    // PHOTO MANAGEMENT TASK
+    Task<IEnumerable<TagDto>> GetTags();
+    Task<IEnumerable<string>> GetTagsAsStrings();
+    void AddTag(Tag tag);
     Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos();
     Task<Photo?> GetPhotoById(int id);
+    Task<Photo?> GetPhotoWithTagsByIdAsync(int id);
+    Task<List<Photo>> GetPhotosByUsernameAsync(string username);
+    Task<List<PhotoStatsDto>> GetPhotoApprovalStatsAsync(int currentUserId);
+    Task<List<string>> GetUsersWithoutMainPhotoAsync(int currentUserId);
     void RemovePhoto(Photo photo);
 }

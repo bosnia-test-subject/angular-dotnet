@@ -6,4 +6,5 @@ public class PhotoForApprovalDto
     public required string Url { get; set; }
     public required string Username { get; set; }
     public bool isApproved { get; set; }
+    public List<string> Tags { get; set; } = new List<string>();
 }

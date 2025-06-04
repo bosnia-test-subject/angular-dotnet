@@ -3,6 +3,7 @@ using API.Entities;
 using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
+using Microsoft.Identity.Client;
 
 namespace API.Services
 {
@@ -154,6 +155,22 @@ namespace API.Services
                 var photo = await _unitOfWork.PhotosRepository.GetPhotoById(photoId);
                 if (photo == null || photo.IsMain) throw new InvalidOperationException("Cannot delete this photo.");
 
+                if (photo.IsMain)
+                {
+                    _logger.LogWarning("Cannot delete main photo for user: {username}", username);
+                    throw new InvalidOperationException("Cannot delete main photo.");
+                }
+                if (username != user.UserName)
+                {
+                    _logger.LogWarning("User {username} attempted to delete photo of another user.", username);
+                    throw new UnauthorizedAccessException("You cannot delete photos of other users.");
+                }
+                if (photo.AppUserId != user.Id)
+                {
+                    _logger.LogWarning("Photo with ID {photoId} does not belong to user: {username}", photoId, username);
+                    throw new UnauthorizedAccessException("You cannot delete photos that do not belong to you.");
+                }
+
                 if (photo.PublicId != null)
                 {
                     var result = await _photoService.DeletePhotoAsync(photo.PublicId);
@@ -171,6 +188,111 @@ namespace API.Services
             {
                 _logger.LogError(ex, "Error occurred while deleting photo for user: {username}", username);
                 throw;
+            }
+        }
+        public async Task AssignTagsByNameAsync(string username, int photoId, List<string> tagNames)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            if (tagNames == null || !tagNames.Any())
+                throw new ArgumentException("At least one tag name is required.");
+
+            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+            if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+            var distinctTagNames = tagNames
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Select(n => n.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var tags = await _unitOfWork.TagsRepository.GetTagsByNamesAsync(distinctTagNames);
+            if (tags == null || !tags.Any())
+                throw new KeyNotFoundException("No tags found with the provided names.");
+
+            var assignedTagNames = photo.PhotoTags
+                .Select(pt => pt.Tag!.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var tag in tags)
+            {
+                if (!assignedTagNames.Contains(tag.Name))
+                {
+                    photo.PhotoTags.Add(new PhotoTag
+                    {
+                        Photo = photo,
+                        Tag = tag,
+                        CreatedBy = username,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+            await _unitOfWork.Complete();
+        }
+        public async Task<List<TagDto>> GetTagsAsync(int photoId)
+        {
+            try
+            {
+                var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+                if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+                var tags = photo.PhotoTags.Select(pt => pt.Tag).ToList();
+                return _mapper.Map<List<TagDto>>(tags);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tags for photo {photoId}", photoId);
+                throw;
+            }
+        }
+        public async Task<List<PhotoDto>> GetPhotoWithTagsByUsernameAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            var photos = await _unitOfWork.PhotosRepository.GetPhotosByUsernameAsync(username);
+            if (photos == null)
+                throw new KeyNotFoundException("No photos found for this user.");
+            return _mapper.Map<List<PhotoDto>>(photos);
+        }
+        public async Task<IEnumerable<object>> GetTagsAsync()
+        {
+            try
+            {
+                return await _unitOfWork.PhotosRepository.GetTagsAsStrings();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tags.");
+                throw;
+            }
+        }
+        public async Task RemoveTagFromPhotoAsync(string username, int photoId, string tagName)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username is required.");
+
+            if (string.IsNullOrWhiteSpace(tagName))
+                throw new ArgumentException("Tag name is required.");
+
+            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+            var photo = await _unitOfWork.PhotosRepository.GetPhotoWithTagsByIdAsync(photoId);
+            if (photo == null) throw new KeyNotFoundException("Photo not found.");
+
+            var tag = await _unitOfWork.TagsRepository.GetTagByNameAsync(tagName);
+            if (tag == null) throw new KeyNotFoundException("Tag not found.");
+
+            var photoTag = photo.PhotoTags.FirstOrDefault(pt => pt.TagId == tag.Id);
+            if (photoTag != null)
+            {
+                photo.PhotoTags.Remove(photoTag);
+                await _unitOfWork.Complete();
             }
         }
     }

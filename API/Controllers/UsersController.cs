@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
+
 [Authorize]
 public class UsersController : BaseApiController
 {
@@ -177,6 +178,113 @@ public class UsersController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting photo for user: {Username}", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    [HttpPost("assign-tags/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> AssignTags(int photoId, [FromBody] List<string> tags)
+    {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
+        try
+        {
+            await _userService.AssignTagsByNameAsync(username, photoId, tags);
+            return Ok();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid operation while assigning tags to photo with ID {PhotoId} for user: {Username}", photoId, username);
+            return BadRequest(ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {PhotoId} not found for user: {Username}", photoId, username);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while assigning tags to photo for user: {Username}", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    [HttpGet("photos-tags")]
+    [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<PhotoDto>>> GetPhotoTagsByUsername()
+    {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
+        try
+        {
+            var photos = await _userService.GetPhotoWithTagsByUsernameAsync(username);
+            if (photos == null)
+            {
+                _logger.LogWarning("No tags found for user with username {username}.", username);
+                return NotFound($"No tags found for username {username}.");
+            }
+            return Ok(photos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags for username {username}.", username);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+    [HttpGet("tags")]
+    [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<string>>> GetTags()
+    {
+        try
+        {
+            _logger.LogDebug("Admin Controller has been initiated - Method GetTags()");
+            var tags = await _userService.GetTagsAsync();
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching tags.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
+    [HttpDelete("remove-tag/{photoId:int}/{tagName}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RemoveTagFromPhoto(int photoId, string tagName)
+    {
+        var username = User.GetUsername();
+        if (string.IsNullOrWhiteSpace(username) || username == null)
+        {
+            _logger.LogWarning("Authenticated username is missing or invalid.");
+            return NotFound("Authenticated user not found.");
+        }
+        try
+        {
+            await _userService.RemoveTagFromPhotoAsync(username, photoId, tagName);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Photo with ID {PhotoId} or tag {TagName} not found for user: {Username}", photoId, tagName, username);
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while removing tag from photo for user: {Username}", username);
             return StatusCode(500, "Internal server error");
         }
     }
