@@ -288,4 +288,21 @@ public class UsersController : BaseApiController
             return StatusCode(500, "Internal server error");
         }
     }
+    [HttpGet("approved-photos")]
+    [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> GetAllApprovedPhotos()
+    {
+        try
+        {
+            _logger.LogDebug("User Controller has been initiated - Method GetPhotos()");
+            var photos = await _userService.GetAllApprovedPhotosAsync();
+            return Ok(photos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching photos for approval.");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
+    }
 }

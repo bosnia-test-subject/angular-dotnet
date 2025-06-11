@@ -30,7 +30,11 @@ export class MemberListComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    if (!this.memberService.paginatedResult()) this.loadMembers();
+    if (!this.memberService.paginatedResult()) {
+      setTimeout(() => {
+        this.loadMembers();
+      }, 0);
+    }
   }
 
   getPaginatedResult() {
@@ -52,7 +56,7 @@ export class MemberListComponent implements OnInit {
   pageChanged(event: any) {
     if (this.currentPage != event.page) {
       this.currentPage = event.page;
-      this.getUserParams().pageNumber = this.currentPage;
+      this.getUserParams()!.pageNumber = this.currentPage;
       this.loadMembers();
     }
   }

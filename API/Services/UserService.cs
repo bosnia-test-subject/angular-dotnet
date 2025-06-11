@@ -295,5 +295,17 @@ namespace API.Services
                 await _unitOfWork.Complete();
             }
         }
+        public async Task<IEnumerable<object>> GetAllApprovedPhotosAsync()
+        {
+            try
+            {
+                return await _unitOfWork.PhotosRepository.GetApprovedPhotos();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching approved photos.");
+                throw;
+            }
+        }
     }
 }

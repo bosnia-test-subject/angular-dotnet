@@ -6,6 +6,8 @@ import { ButtonWrapperComponent } from '../../_forms/button-wrapper/button-wrapp
 import { Tag } from '../../_models/tag';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-photo-management',
@@ -16,17 +18,33 @@ import { CommonModule } from '@angular/common';
 })
 export class PhotoManagementComponent implements OnInit {
   private adminService = inject(AdminService);
-  toastr = inject(ToastrService);
-  photos: Photo[] = [];
+  private toastr = inject(ToastrService);
+
+  private photosSubject = new BehaviorSubject<Photo[]>([]);
+  private selectedTagSubject = new BehaviorSubject<string>('');
+  public selectedTag$ = this.selectedTagSubject.asObservable();
   tags: Tag[] = [];
   newTag: Tag = {} as Tag;
-  selectedTag: string = '';
-  filteredPhotos: any[] = [];
+
+  filteredPhotos$ = combineLatest([
+    this.photosSubject.asObservable(),
+    this.selectedTagSubject.asObservable(),
+  ]).pipe(
+    map(([photos, selectedTag]) => {
+      if (!selectedTag) return photos;
+      return photos.filter(photo => photo.tags?.includes(selectedTag));
+    })
+  );
+
   ngOnInit(): void {
     this.getApprovalPhotos();
     this.getTags();
-    this.filteredPhotos = this.photos;
   }
+
+  onTagChange(tag: string) {
+    this.selectedTagSubject.next(tag);
+  }
+
   createTag(form: NgForm) {
     if (form.invalid) return;
     this.adminService.addTag(this.newTag).subscribe({
@@ -45,8 +63,9 @@ export class PhotoManagementComponent implements OnInit {
       },
     });
   }
+
   getTags() {
-    return this.adminService.getTags().subscribe({
+    this.adminService.getTags().subscribe({
       next: response => {
         this.tags = response;
       },
@@ -54,8 +73,9 @@ export class PhotoManagementComponent implements OnInit {
         this.toastr.error('Something unexpected happened: ' + error),
     });
   }
+
   removeTag(tagName: string) {
-    return this.adminService.removeTagByName(tagName).subscribe({
+    this.adminService.removeTagByName(tagName).subscribe({
       next: () => {
         this.toastr.success('Tag successfully removed');
         this.getTags();
@@ -70,27 +90,19 @@ export class PhotoManagementComponent implements OnInit {
       },
     });
   }
-  filterPhotosByTag() {
-    if (!this.selectedTag) {
-      this.filteredPhotos = this.photos;
-    } else {
-      this.filteredPhotos = this.photos.filter(
-        photo => photo.tags && photo.tags.includes(this.selectedTag)
-      );
-    }
-  }
+
   approvePhoto(id: number) {
-    return this.adminService.approvePhoto(id).subscribe({
+    this.adminService.approvePhoto(id).subscribe({
       next: () => {
         this.toastr.success('Photo succesfully approved');
         this.getApprovalPhotos();
-        console.log('Photo approved');
       },
       error: error => console.log(error),
     });
   }
+
   rejectPhoto(id: number) {
-    return this.adminService.rejectPhoto(id).subscribe({
+    this.adminService.rejectPhoto(id).subscribe({
       next: () => {
         this.toastr.success('Photo succesfully rejected');
         this.getApprovalPhotos();
@@ -98,14 +110,21 @@ export class PhotoManagementComponent implements OnInit {
       error: error => console.log(error),
     });
   }
+
   getApprovalPhotos() {
-    return this.adminService.getPhotosForApproval().subscribe({
+    this.adminService.getPhotosForApproval().subscribe({
       next: response => {
-        this.photos = response;
-        this.filterPhotosByTag();
+        this.photosSubject.next(response);
       },
       error: error =>
         this.toastr.error('Something unexpected happened: ' + error),
     });
+  }
+  trackByPhotoId(index: number, photo: Photo): number {
+    return photo.id;
+  }
+
+  trackByTagId(index: number, tag: Tag): number {
+    return tag.id;
   }
 }

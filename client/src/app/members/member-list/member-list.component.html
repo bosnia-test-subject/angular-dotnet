@@ -13,7 +13,7 @@
           name="minAge"
           label="Age from:"
           type="number"
-          [(ngModel)]="getUserParams().minAge">
+          [(ngModel)]="getUserParams()!.minAge">
         </app-input-wrapper>
       </div>
       <div class="d-flex mx-2">
@@ -21,14 +21,14 @@
           label="Age to:"
           type="number"
           name="maxAge"
-          [(ngModel)]="getUserParams().maxAge"></app-input-wrapper>
+          [(ngModel)]="getUserParams()!.maxAge"></app-input-wrapper>
       </div>
       <div class="d-flex flex-column mx-2">
         <select
           name="gender"
           class="form-select py-3 select-width ms-1"
           id=""
-          [(ngModel)]="getUserParams().gender">
+          [(ngModel)]="getUserParams()!.gender">
           @for (gender of genderList; track gender.value) {
             <option [value]="gender.value">
               {{ gender.display }}
@@ -55,7 +55,7 @@
             class="btn btn-primary"
             name="orderBy"
             btnRadio="lastActive"
-            [(ngModel)]="getUserParams().orderBy"
+            [(ngModel)]="getUserParams()!.orderBy"
             (click)="loadMembers()">
             Last Active
           </button>
@@ -64,7 +64,7 @@
             class="btn btn-primary"
             name="orderBy"
             btnRadio="created"
-            [(ngModel)]="getUserParams().orderBy"
+            [(ngModel)]="getUserParams()!.orderBy"
             (click)="loadMembers()">
             Newest Members
           </button>

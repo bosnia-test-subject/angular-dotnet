@@ -7,6 +7,7 @@ public interface IPhotoRepository
 {
     Task<IEnumerable<TagDto>> GetTags();
     Task<IEnumerable<string>> GetTagsAsStrings();
+    Task<IEnumerable<PhotoForApprovalDto>> GetApprovedPhotos();
     void AddTag(Tag tag);
     Task<IEnumerable<PhotoForApprovalDto>> GetUnapprovedPhotos();
     Task<Photo?> GetPhotoById(int id);

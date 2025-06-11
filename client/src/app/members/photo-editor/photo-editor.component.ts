@@ -1,13 +1,22 @@
 import { Component, inject, input, OnInit, output } from '@angular/core';
 import { Member } from '../../_models/member';
-import { DecimalPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import {
+  DecimalPipe,
+  NgClass,
+  NgFor,
+  NgIf,
+  NgStyle,
+  AsyncPipe,
+} from '@angular/common'; // Import AsyncPipe
 import { FileUploader, FileUploadModule } from 'ng2-file-upload';
-import { AccountService } from '../../_services/account.service';
 import { environment } from '../../../environments/environment';
 import { Photo } from '../../_models/photo';
 import { MembersService } from '../../_services/members.service';
 import { ToastrService } from 'ngx-toastr';
 import { FormsModule } from '@angular/forms';
+import { AuthStoreService } from '../../_services/auth-store.service';
+import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs'; // Import RxJS
+
 @Component({
   selector: 'app-photo-editor',
   standalone: true,
@@ -19,43 +28,76 @@ import { FormsModule } from '@angular/forms';
     FileUploadModule,
     DecimalPipe,
     FormsModule,
+    AsyncPipe, // Add AsyncPipe to imports
   ],
   templateUrl: './photo-editor.component.html',
   styleUrl: './photo-editor.component.css',
 })
 export class PhotoEditorComponent implements OnInit {
-  private accountService = inject(AccountService);
+  private authService = inject(AuthStoreService);
   private memberService = inject(MembersService);
   private toastr = inject(ToastrService);
+
   member = input.required<Member>();
-  userPhotos: Photo[] = [];
+  memberChange = output<Member>();
+
   uploader?: FileUploader;
   hasBaseDropZoneOver = false;
   baseUrl = environment.apiUrl;
-  memberChange = output<Member>();
+
   editingPhotoId: number | null = null;
   selectedTagNames: string[] = [];
   availableTags: string[] = [];
-  selectedTag: string = '';
-  filteredPhotos: Photo[] = [];
+
+  private userPhotosSubject = new BehaviorSubject<Photo[]>([]);
+  userPhotos$: Observable<Photo[]> = this.userPhotosSubject.asObservable();
+
+  private selectedFilterTagSubject = new BehaviorSubject<string>('');
+  selectedFilterTag$: Observable<string> =
+    this.selectedFilterTagSubject.asObservable();
+
+  private showApprovedOnlySubject = new BehaviorSubject<boolean>(false);
+  showApprovedOnly$: Observable<boolean> =
+    this.showApprovedOnlySubject.asObservable();
+
+  filteredPhotos$: Observable<Photo[]>;
+
+  constructor() {
+    this.filteredPhotos$ = combineLatest([
+      this.userPhotos$,
+      this.selectedFilterTag$,
+      this.showApprovedOnly$,
+    ]).pipe(
+      map(([photos, selectedTag, showApproved]) => {
+        return photos.filter(photo => {
+          const matchesTag = selectedTag
+            ? photo.tags && photo.tags.includes(selectedTag)
+            : true;
+          const matchesApproval = showApproved ? photo.isApproved : true;
+          return matchesTag && matchesApproval;
+        });
+      })
+    );
+  }
 
   ngOnInit(): void {
     this.initializeUploader();
     this.loadAvailableTags();
     this.getUserPhotos();
   }
+
   fileOverBase(e: any) {
     this.hasBaseDropZoneOver = e;
   }
 
-  filterPhotosByTag() {
-    if (!this.selectedTag) {
-      this.filteredPhotos = this.userPhotos;
-    } else {
-      this.filteredPhotos = this.userPhotos.filter(
-        photo => photo.tags && photo.tags.includes(this.selectedTag)
-      );
-    }
+  onSelectedTagChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.selectedFilterTagSubject.next(target.value);
+  }
+
+  onShowApprovedOnlyChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.showApprovedOnlySubject.next(target.checked);
   }
 
   loadAvailableTags() {
@@ -77,9 +119,9 @@ export class PhotoEditorComponent implements OnInit {
 
     if (!this.availableTags.length) {
       this.loadAvailableTags();
-      console.log(this.availableTags);
     }
   }
+
   toggleTagEditor(photoId: number) {
     if (this.editingPhotoId === photoId) {
       this.editingPhotoId = null;
@@ -101,12 +143,21 @@ export class PhotoEditorComponent implements OnInit {
     this.memberService.removeTagFromPhoto(photo.id, tag).subscribe({
       next: () => {
         this.toastr.success('Tag removed successfully');
-        photo.tags = photo.tags?.filter(t => t !== tag) || [];
+
+        const currentPhotos = this.userPhotosSubject.getValue();
+        const updatedPhotos = currentPhotos.map(p =>
+          p.id === photo.id
+            ? { ...p, tags: p.tags?.filter(t => t !== tag) || [] }
+            : p
+        );
+        this.userPhotosSubject.next(updatedPhotos);
+
         const memberPhotoIndex = this.member().photos.findIndex(
           p => p.id === photo.id
         );
         if (memberPhotoIndex > -1) {
-          this.member().photos[memberPhotoIndex].tags = [...photo.tags];
+          this.member().photos[memberPhotoIndex].tags =
+            photo.tags?.filter(t => t !== tag) || [];
         }
         this.memberChange.emit({
           ...this.member(),
@@ -126,10 +177,13 @@ export class PhotoEditorComponent implements OnInit {
       .subscribe({
         next: () => {
           this.toastr.success('Tags updated successfully');
-          const photoIndex = this.userPhotos.findIndex(p => p.id === photo.id);
-          if (photoIndex > -1) {
-            this.userPhotos[photoIndex].tags = [...this.selectedTagNames];
-          }
+
+          const currentPhotos = this.userPhotosSubject.getValue();
+          const updatedPhotos = currentPhotos.map(p =>
+            p.id === photo.id ? { ...p, tags: [...this.selectedTagNames] } : p
+          );
+          this.userPhotosSubject.next(updatedPhotos);
+
           const memberPhotoIndex = this.member().photos.findIndex(
             p => p.id === photo.id
           );
@@ -156,19 +210,17 @@ export class PhotoEditorComponent implements OnInit {
     this.memberService.getAllTags().subscribe({
       next: tags => {
         this.availableTags = tags;
-        console.log('Available tags:', this.availableTags);
-        console.log(tags);
       },
       error: err => {
         console.error('Failed to load tags', err);
       },
     });
   }
+
   getUserPhotos() {
     this.memberService.getPhotosWithTags().subscribe({
       next: photos => {
-        this.userPhotos = photos;
-        this.filterPhotosByTag();
+        this.userPhotosSubject.next(photos);
       },
     });
   }
@@ -176,7 +228,11 @@ export class PhotoEditorComponent implements OnInit {
   deletePhoto(photo: Photo) {
     this.memberService.deletePhoto(photo).subscribe({
       next: () => {
-        this.userPhotos = this.userPhotos.filter(x => x.id !== photo.id);
+        const updatedPhotos = this.userPhotosSubject
+          .getValue()
+          .filter(x => x.id !== photo.id);
+        this.userPhotosSubject.next(updatedPhotos);
+
         const updatedMember = { ...this.member() };
         updatedMember.photos = updatedMember.photos.filter(
           x => x.id !== photo.id
@@ -190,15 +246,18 @@ export class PhotoEditorComponent implements OnInit {
     if (photo.isApproved) {
       this.memberService.setMainPhoto(photo).subscribe({
         next: () => {
-          const user = this.accountService.currentUser();
+          const user = this.authService.getCurrentUserSnapshot();
           if (user) {
             user.photoUrl = photo.url;
-            this.accountService.setCurrentUser(user);
+            this.authService.setCurrentUser(user);
           }
-          this.userPhotos = this.userPhotos.map(p => ({
+
+          const updatedPhotos = this.userPhotosSubject.getValue().map(p => ({
             ...p,
             isMain: p.id === photo.id,
           }));
+          this.userPhotosSubject.next(updatedPhotos);
+
           const updatedMember = { ...this.member() };
           updatedMember.photoUrl = photo.url;
           updatedMember.photos = updatedMember.photos.map(p => ({
@@ -216,7 +275,7 @@ export class PhotoEditorComponent implements OnInit {
   initializeUploader() {
     this.uploader = new FileUploader({
       url: this.baseUrl + 'users/add-photo',
-      authToken: 'Bearer ' + this.accountService.currentUser()?.token,
+      authToken: 'Bearer ' + this.authService.getCurrentUserSnapshot()?.token,
       isHTML5: true,
       allowedFileType: ['image'],
       removeAfterUpload: true,
@@ -230,15 +289,18 @@ export class PhotoEditorComponent implements OnInit {
 
     this.uploader.onSuccessItem = (items, response) => {
       const photo = JSON.parse(response);
-      this.userPhotos.push(photo);
+      const currentPhotos = this.userPhotosSubject.getValue();
+      this.userPhotosSubject.next([...currentPhotos, photo]);
+
       const updatedMember = { ...this.member() };
       updatedMember.photos = [...updatedMember.photos, photo];
       this.memberChange.emit(updatedMember);
+
       if (photo.isMain) {
-        const user = this.accountService.currentUser();
+        const user = this.authService.getCurrentUserSnapshot();
         if (user) {
           user.photoUrl = photo.url;
-          this.accountService.setCurrentUser(user);
+          this.authService.setCurrentUser(user);
         }
         updatedMember.photoUrl = photo.url;
         updatedMember.photos = updatedMember.photos.map(p => ({
@@ -249,6 +311,7 @@ export class PhotoEditorComponent implements OnInit {
       }
     };
   }
+
   trackPhoto(index: number, photo: Photo) {
     return photo.id;
   }

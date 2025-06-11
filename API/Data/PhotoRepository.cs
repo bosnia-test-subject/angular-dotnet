@@ -35,6 +35,11 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
         var query = context.Photos.IgnoreQueryFilters().Where(x => x.isApproved == false).AsQueryable();
         return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider).ToListAsync();
     }
+    public async Task<IEnumerable<PhotoForApprovalDto>> GetApprovedPhotos()
+    {
+        var query = context.Photos.IgnoreQueryFilters().Where(x => x.isApproved == true).AsQueryable();
+        return await query.ProjectTo<PhotoForApprovalDto>(mapper.ConfigurationProvider).ToListAsync();
+    }
     public void RemovePhoto(Photo photo)
     {
         context.Photos.Remove(photo);
