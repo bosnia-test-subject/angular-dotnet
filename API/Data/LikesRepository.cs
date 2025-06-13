@@ -51,6 +51,16 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
                 .Select(x => x.SourceUser)
                 .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
                 break;
+            case "mutual":
+                var likedUserIds = context.Likes
+                    .Where(l => l.SourceUserId == likesParams.UserId)
+                    .Select(l => l.TargetUserId);
+
+                query = context.Likes
+                    .Where(l => l.TargetUserId == likesParams.UserId && likedUserIds.Contains(l.SourceUserId))
+                    .Select(l => l.SourceUser)
+                    .ProjectTo<MemberDto>(mapper.ConfigurationProvider);
+                break;
             default:
                 var likeIds = await GetCurrentUserIds(likesParams.UserId);
 

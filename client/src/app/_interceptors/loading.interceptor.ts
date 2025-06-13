@@ -1,15 +1,19 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { BusyService } from '../_services/busy.service';
-import { delay, finalize } from 'rxjs';
+import { inject, NgZone } from '@angular/core';
+import { LoadingService } from '../_services/loading.service';
+import { finalize } from 'rxjs/operators';
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
-  const busyService = inject(BusyService);
-  busyService.busy();
+  const loadingService = inject(LoadingService);
+  const zone = inject(NgZone);
+
+  console.log('HTTP request intercepted:', req.url);
+
+  zone.run(() => loadingService.incrementRequest());
+
   return next(req).pipe(
-    delay(500),
     finalize(() => {
-      busyService.idle();
+      zone.run(() => loadingService.decrementRequest());
     })
   );
 };

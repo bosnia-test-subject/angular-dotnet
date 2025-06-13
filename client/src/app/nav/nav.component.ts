@@ -5,9 +5,11 @@ import { AccountService } from '../_services/account.service';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { HasRoleDirective } from '../_directives/has-role.directive';
-import { InputWrapperComponent } from "../_forms/input-wrapper/input-wrapper.component";
-import { ButtonWrapperComponent } from "../_forms/button-wrapper/button-wrapper.component";
+import { ButtonWrapperComponent } from '../_forms/button-wrapper/button-wrapper.component';
+import { AuthStoreService } from '../_services/auth-store.service';
+import { CommonModule } from '@angular/common';
+import { map, Observable } from 'rxjs';
+import { User } from '../_models/user';
 
 @Component({
   selector: 'app-nav',
@@ -17,18 +19,27 @@ import { ButtonWrapperComponent } from "../_forms/button-wrapper/button-wrapper.
     BsDropdownModule,
     RouterLink,
     RouterLinkActive,
-    HasRoleDirective,
-    InputWrapperComponent,
-    ButtonWrapperComponent
-],
+    ButtonWrapperComponent,
+    CommonModule,
+  ],
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.css',
 })
 export class NavComponent {
   private router = inject(Router);
   accountService = inject(AccountService);
+  authStore = inject(AuthStoreService);
   private toastr = inject(ToastrService);
+
+  user$: Observable<User | null>;
+  isLoggedIn$ = this.authStore.isLoggedIn$;
+  isAdmin$ = this.authStore.roles$.pipe(map(roles => roles.includes('Admin')));
+
   model: any = {};
+
+  constructor() {
+    this.user$ = this.authStore.currentUser$;
+  }
 
   login() {
     this.accountService.login(this.model).subscribe({
@@ -40,7 +51,7 @@ export class NavComponent {
   }
 
   logout() {
-    this.router.navigateByUrl('/');
     this.accountService.logout();
+    this.router.navigateByUrl('/');
   }
 }

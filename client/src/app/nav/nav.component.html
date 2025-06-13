@@ -19,8 +19,10 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto mb-2 mb-md-0">
-        @if (accountService.currentUser()) {
+      <!-- Show if user is logged in -->
+      <ng-container *ngIf="isLoggedIn$ | async; else guestLinks">
+        <!-- Authenticated nav items -->
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
           <li class="nav-item">
             <a routerLink="/members" routerLinkActive="active" class="nav-link"
               >Matches</a
@@ -36,31 +38,37 @@
               >Messages</a
             >
           </li>
-          <li *appHasRole="['Admin', 'Moderator']" class="nav-item">
+          <li class="nav-item">
+            <a
+              routerLink="/approve-feed"
+              routerLinkActive="active"
+              class="nav-link"
+              >Approve Feed</a
+            >
+          </li>
+          <!-- Show Admin link only if user is admin -->
+          <li *ngIf="isAdmin$ | async" class="nav-item">
             <a routerLink="/admin" routerLinkActive="active" class="nav-link"
               >Admin</a
             >
           </li>
-        }
-        <li class="nav-item">
-          <a routerLink="/errors" routerLinkActive="active" class="nav-link"
-            >Errors</a
-          >
-        </li>
-      </ul>
+          <li class="nav-item">
+            <a routerLink="/errors" routerLinkActive="active" class="nav-link"
+              >Errors</a
+            >
+          </li>
+        </ul>
 
-      @if (accountService.currentUser()) {
+        <!-- User dropdown -->
         <div dropdown class="dropdown d-flex align-items-center">
           <img
-            src="{{
-              accountService.currentUser()?.photoUrl || './assets/user.png'
-            }}"
+            [src]="(user$ | async)?.photoUrl || './assets/user.png'"
             alt="user main image"
             class="rounded-circle me-2 circle-img" />
           <a
             dropdownToggle
             class="dropdown-toggle cursor-pointer text-light text-decoration-none fw-semibold">
-            Welcome {{ accountService.currentUser()?.knownAs }}
+            Welcome {{ (user$ | async)?.knownAs }}
           </a>
           <div *dropdownMenu class="dropdown-menu dropdown-menu-end shadow">
             <a routerLink="/member/edit" class="dropdown-item">Edit profile</a>
@@ -68,9 +76,19 @@
             <a class="dropdown-item" (click)="logout()">Log Out</a>
           </div>
         </div>
-      }
+      </ng-container>
 
-      @if (!accountService.currentUser()) {
+      <!-- Guest nav -->
+      <ng-template #guestLinks>
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a routerLink="/errors" routerLinkActive="active" class="nav-link"
+              >Errors</a
+            >
+          </li>
+        </ul>
+
+        <!-- Login form -->
         <form
           #loginForm="ngForm"
           (ngSubmit)="login()"
@@ -95,7 +113,7 @@
             type="submit">
           </app-button-wrapper>
         </form>
-      }
+      </ng-template>
     </div>
   </div>
 </nav>

@@ -16,5 +16,6 @@ namespace API.Interfaces
         Task<PhotoDto> AddPhotoAsync(string username, IFormFile file);
         Task SetMainPhotoAsync(string username, int photoId);
         Task DeletePhotoAsync(string username, int photoId);
+        Task<IEnumerable<object>> GetAllApprovedPhotosAsync();
     }
 }

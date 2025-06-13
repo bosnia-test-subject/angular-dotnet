@@ -1,22 +1,66 @@
-<div class="container">
+<div class="container py-5">
   <div class="home-style">
     @if (!registerMode) {
-      <h1 class="fw-bold">Find your match</h1>
-      <p class="lead">
-        Come on in to view your matches... all you need to do is sign up!
-      </p>
-      <div class="text-center">
-        <button (click)="registerToggle()" class="btn btn-primary btn-lg me-2">
-          Register
-        </button>
-        <button class="btn btn-info btn-lg me-2">Learn More</button>
+      <div class="row align-items-center">
+        <div class="col-md-6 text-center text-md-start mb-4 mb-md-0">
+          <h1 class="fw-bold display-4 mb-3">Find Your Perfect Match Today</h1>
+          <p class="lead text-muted mb-4">
+            Join thousands of singles in our vibrant community seeking
+            meaningful relationships. Whether you're looking for friendship,
+            love, or something special, our platform makes it easy to connect
+            with like-minded people.
+          </p>
+
+          <h5 class="mb-3">Why Join Us?</h5>
+          <ul class="list-unstyled text-muted mb-4">
+            <li>
+              <i class="bi bi-check-circle-fill text-primary me-2"></i>Curated
+              profiles based on your preferences
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-primary me-2"></i>Safe and
+              secure platform with privacy controls
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-primary me-2"></i>Real-time
+              messaging & video chat features
+            </li>
+            <li>
+              <i class="bi bi-check-circle-fill text-primary me-2"></i>Community
+              events and icebreaker games
+            </li>
+          </ul>
+
+          <div
+            class="mt-4 d-flex flex-column flex-sm-row justify-content-center justify-content-md-start gap-3">
+            <button
+              (click)="registerToggle()"
+              class="btn btn-primary btn-lg px-4">
+              Get Started - It's Free!
+            </button>
+            <button class="btn btn-outline-secondary btn-lg px-4">
+              Learn More
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <img
+            src="../../assets/dating-banner.jpg"
+            alt="Find Match"
+            class="img-fluid rounded shadow"
+            style="max-height: 400px" />
+        </div>
       </div>
     } @else {
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-8 shadow">
-            <app-register
-              (cancelRegister)="cancelRegisterMode($event)"></app-register>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <h3 class="text-center mb-4">Create Your Account</h3>
+              <app-register
+                (cancelRegister)="cancelRegisterMode($event)"></app-register>
+            </div>
           </div>
         </div>
       </div>

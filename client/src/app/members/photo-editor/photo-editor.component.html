@@ -1,17 +1,29 @@
 <div class="d-flex justify-content-center mb-3">
   <select
     class="form-select w-auto"
-    [(ngModel)]="selectedTag"
-    (change)="filterPhotosByTag()">
+    [ngModel]="selectedFilterTag$ | async"
+    (change)="onSelectedTagChange($event)">
     <option value="">All Tags</option>
     <option *ngFor="let tag of availableTags" [value]="tag">{{ tag }}</option>
   </select>
+
+  <div class="form-check ms-3 d-flex align-items-center">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      [ngModel]="showApprovedOnly$ | async"
+      (change)="onShowApprovedOnlyChange($event)"
+      id="showApprovedOnly" />
+    <label class="form-check-label ms-1" for="showApprovedOnly">
+      Show Approved Only
+    </label>
+  </div>
 </div>
 
 <div class="row">
   <div
     class="col-3 card m-2 p-4"
-    *ngFor="let photo of filteredPhotos; trackBy: trackPhoto">
+    *ngFor="let photo of filteredPhotos$ | async; trackBy: trackPhoto">
     <div class="position-relative align-items-center d-inline-block">
       <img
         [ngClass]="{ 'bg-white bg-opacity-25': !photo.isApproved }"
@@ -93,7 +105,6 @@
     </div>
   </div>
 
-  <!-------NG FILE UPLOAD--------->
   <div class="row mt-5">
     <div class="col-md-3">
       <h3>Add photos</h3>

@@ -6,7 +6,6 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Member } from '../../_models/member';
-import { AccountService } from '../../_services/account.service';
 import { MembersService } from '../../_services/members.service';
 import { TabsModule } from 'ngx-bootstrap/tabs';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -14,7 +13,8 @@ import { ToastrService } from 'ngx-toastr';
 import { PhotoEditorComponent } from '../photo-editor/photo-editor.component';
 import { TimeagoModule } from 'ngx-timeago';
 import { DatePipe } from '@angular/common';
-import { InputWrapperComponent } from "../../_forms/input-wrapper/input-wrapper.component";
+import { InputWrapperComponent } from '../../_forms/input-wrapper/input-wrapper.component';
+import { AuthStoreService } from '../../_services/auth-store.service';
 
 @Component({
   selector: 'app-member-edit',
@@ -25,8 +25,8 @@ import { InputWrapperComponent } from "../../_forms/input-wrapper/input-wrapper.
     PhotoEditorComponent,
     TimeagoModule,
     DatePipe,
-    InputWrapperComponent
-],
+    InputWrapperComponent,
+  ],
   templateUrl: './member-edit.component.html',
   styleUrl: './member-edit.component.css',
 })
@@ -38,7 +38,7 @@ export class MemberEditComponent implements OnInit {
     }
   }
   member?: Member;
-  private accountService = inject(AccountService);
+  private authService = inject(AuthStoreService);
   private memberService = inject(MembersService);
   private toastr = inject(ToastrService);
 
@@ -47,7 +47,7 @@ export class MemberEditComponent implements OnInit {
   }
 
   loadMember() {
-    const user = this.accountService.currentUser();
+    const user = this.authService.getCurrentUserSnapshot();
     if (!user) return;
     this.memberService.getMember(user.username).subscribe({
       next: member => (this.member = member),

@@ -2,92 +2,123 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Member } from '../_models/member';
-import { of } from 'rxjs';
+import { Observable, of, shareReplay } from 'rxjs';
 import { Photo } from '../_models/photo';
 import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
-import { AccountService } from './account.service';
 import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
 import { Tag } from '../_models/tag';
+import { AuthStoreService } from './auth-store.service';
+import { User } from '../_models/user';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MembersService {
   private http = inject(HttpClient);
-  private accountService = inject(AccountService);
+  private authService = inject(AuthStoreService);
   baseUrl = environment.apiUrl;
-  // members = signal<Member[]>([]);
+
   paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
-  memberCache = new Map();
-  user = this.accountService.currentUser();
-  userParams = signal<UserParams>(new UserParams(this.user));
+  memberCache = new Map<string, any>();
+
+  private currentUser$?: Observable<User | null>;
+
+  userParams = signal<UserParams | null>(null);
+
+  constructor() {
+    this.getCurrentUser().subscribe(user => {
+      if (user) {
+        this.userParams.set(new UserParams(user));
+      }
+    });
+  }
+
+  getCurrentUser(): Observable<User | null> {
+    if (!this.currentUser$) {
+      this.currentUser$ = this.authService.currentUser$.pipe(shareReplay(1));
+    }
+    return this.currentUser$;
+  }
 
   resetUserParams() {
-    this.userParams.set(new UserParams(this.user));
+    const user = this.authService.getCurrentUserSnapshot();
+    if (user) {
+      this.userParams.set(new UserParams(user));
+    }
+  }
+
+  getUserParams(): UserParams | null {
+    return this.userParams();
+  }
+
+  setUserParams(params: UserParams) {
+    this.userParams.set(params);
   }
 
   getMembers() {
-    const response = this.memberCache.get(
-      Object.values(this.userParams()).join('-')
-    );
+    const paramsObj = this.userParams();
+    if (!paramsObj) return;
 
-    if (response) return setPaginatedResponse(response, this.paginatedResult);
-    let params = setPaginationHeaders(
-      this.userParams().pageNumber,
-      this.userParams().pageSize
-    );
+    const cacheKey = Object.values(paramsObj).join('-');
+    const cachedResponse = this.memberCache.get(cacheKey);
 
-    params = params.append('minAge', this.userParams().minAge);
-    params = params.append('maxAge', this.userParams().maxAge);
-    params = params.append('gender', this.userParams().gender);
-    params = params.append('orderBy', this.userParams().orderBy);
+    if (cachedResponse) {
+      return setPaginatedResponse(cachedResponse, this.paginatedResult);
+    }
+
+    let params = setPaginationHeaders(paramsObj.pageNumber, paramsObj.pageSize);
+    params = params.append('minAge', paramsObj.minAge);
+    params = params.append('maxAge', paramsObj.maxAge);
+    params = params.append('gender', paramsObj.gender);
+    params = params.append('orderBy', paramsObj.orderBy);
 
     return this.http
       .get<Member[]>(this.baseUrl + 'users', { observe: 'response', params })
       .subscribe({
         next: response => {
-          console.log(response);
           setPaginatedResponse(response, this.paginatedResult);
-          this.memberCache.set(
-            Object.values(this.userParams()).join('-'),
-            response
-          );
+          this.memberCache.set(cacheKey, response);
         },
       });
   }
 
-  getMember(username: string) {
-    const member: Member = [...this.memberCache.values()]
+  getMember(username: string): Observable<Member> {
+    const member: Member | undefined = [...this.memberCache.values()]
       .reduce((arr, elem) => arr.concat(elem.body), [])
       .find((m: Member) => m.userName === username);
 
     if (member) return of(member);
-    return this.http.get<Member>(this.baseUrl + 'users/' + username);
+
+    return this.http
+      .get<Member>(`${this.baseUrl}users/${username}`)
+      .pipe(shareReplay(1));
   }
+
   updateMember(member: Member) {
-    return this.http.put(this.baseUrl + 'users', member).pipe();
+    return this.http.put(this.baseUrl + 'users', member);
   }
 
   setMainPhoto(photo: Photo) {
-    return this.http
-      .put(this.baseUrl + 'users/set-main-photo/' + photo.id, {})
-      .pipe();
+    return this.http.put(this.baseUrl + 'users/set-main-photo/' + photo.id, {});
   }
+
   deletePhoto(photo: Photo) {
-    return this.http
-      .delete(this.baseUrl + 'users/delete-photo/' + photo.id)
-      .pipe();
+    return this.http.delete(this.baseUrl + 'users/delete-photo/' + photo.id);
   }
+
   getTagsForPhoto(photoId: number) {
     return this.http.get<Tag[]>(this.baseUrl + 'users/tags/' + photoId);
   }
+
   getPhotosWithTags() {
     return this.http.get<Photo[]>(this.baseUrl + 'users/photos-tags');
   }
+
   getAllTags() {
     return this.http.get<string[]>(this.baseUrl + 'users/tags');
   }
+
   addTagToPhoto(photoId: number, tags: string[]) {
     return this.http.post(
       `${this.baseUrl}users/assign-tags/${photoId}`,
@@ -99,6 +130,7 @@ export class MembersService {
       }
     );
   }
+
   removeTagFromPhoto(photoId: number, tagName: string) {
     return this.http.delete(
       `${this.baseUrl}users/remove-tag/${photoId}/${tagName}`

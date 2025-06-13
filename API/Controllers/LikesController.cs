@@ -74,8 +74,8 @@ public class LikesController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error occurred while fetching user likes.");
-            return StatusCode(500, "Internal server error");
+            _logger.LogError(ex, "GetUserLikesAsync threw an exception for Predicate: {Predicate}", likesParams.Predicate);
+            return StatusCode(500, "Error retrieving likes data");
         }
     }
 }

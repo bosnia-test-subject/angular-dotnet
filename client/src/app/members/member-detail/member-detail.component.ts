@@ -8,9 +8,9 @@ import { DatePipe } from '@angular/common';
 import { MemberMessagesComponent } from '../member-messages/member-messages.component';
 import { MessageService } from '../../_services/message.service';
 import { PresenceService } from '../../_services/presence.service';
-import { AccountService } from '../../_services/account.service';
 import { HubConnectionState } from '@microsoft/signalr';
 import { Subject, takeUntil } from 'rxjs';
+import { AuthStoreService } from '../../_services/auth-store.service';
 @Component({
   selector: 'app-member-detail',
   standalone: true,
@@ -30,7 +30,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private accountService = inject(AccountService);
+  private authService = inject(AuthStoreService);
   private destroy$ = new Subject<void>();
 
   member: Member = {} as Member;
@@ -68,7 +68,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
       queryParamsHandling: 'merge',
     });
     if (this.activeTab.heading === 'Messages' && this.member) {
-      const user = this.accountService.currentUser();
+      const user = this.authService.getCurrentUserSnapshot();
       if (!user) return;
       this.messageService.createHubConnection(user, this.member.userName);
     } else {
@@ -81,7 +81,7 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
   }
 
   onRouteParamsChange() {
-    const user = this.accountService.currentUser();
+    const user = this.authService.getCurrentUserSnapshot();
     if (!user) return;
     if (
       this.messageService.hubConnection?.state ===
